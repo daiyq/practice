@@ -29,6 +29,7 @@ namespace d_stl {
 		template<typename...Args>
 		static void construct(T* p, Args&&...args);
 		static void destory(T* p);
+		static void destory(T* first, T* last);
 
 	};
 
@@ -59,6 +60,12 @@ namespace d_stl {
 		p->~T();
 	}
 
+	template<class T>
+	void allocator<T>::destory(T* first, T* last) {
+		for (; first != last; first++) {
+			first->~T();
+		}
+	}
 	//companion algorithm
 	//not make use of POD
 	template<class InputIt, class ForwardIt>

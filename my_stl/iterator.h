@@ -46,6 +46,12 @@ namespace d_stl {
 		typedef typename IterT& reference;
 	};
 
+	template<class InputIt>
+	typename iterator_traits<InputIt>::difference_type
+		distance(InputIt first, InputIt last) {
+
+	}
+
 	template<class Iterator>
 	class reverse_iterator {
 	private:
