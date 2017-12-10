@@ -324,23 +324,129 @@ namespace d_stl {
 	//insert, push, pop
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(const_iterator pos, const T& value) {
-	
+		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
+		if (end_ = stroage_) {
+			size_type new_size = 2 * size();
+			T* t_begin_ = data_alloc::allocate(new_size);
+			T* t_end_ = t_begin_ + size() + 1;
+			T* t_stroage_ = t_begin_ + (((sizeof(T)*new_size + 7) / 8) * 8) / sizeof(T);
+
+			uninitialized_copy(cbegin(), pos, t_begin_);
+			
+			T* t = t_begin_ + dis;
+			*t = T(value);
+			uninitialized_copy(pos, cend(), t + 1);
+
+			delete_data_and_memory();
+			begin_ = t_begin_;
+			end_ = t_end_;
+			stroage_ = t_stroage_;
+			return iterator(begin_ + dis);
+		}
+		else {
+			const_iterator current = cend();
+			for (; current != pos; --current) {
+				current = --current;
+			}
+			*pos = T(value);
+			end_++;
+			return iterator(begin_ + dis);
+		}
 	}
 
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(const_iterator pos, T&& value) {
-		
+		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
+		if (end_ = stroage_) {
+			size_type new_size = 2 * size();
+			T* t_begin_ = data_alloc::allocate(new_size);
+			T* t_end_ = t_begin_ + size() + 1;
+			T* t_stroage_ = t_begin_ + (((sizeof(T)*new_size + 7) / 8) * 8) / sizeof(T);
+
+			uninitialized_copy(cbegin(), pos, t_begin_);
+			T* t = t_begin_ + dis;
+			*t = T(value);
+			uninitialized_copy(++pos, cend(), t + 1);
+
+			delete_data_and_memory();
+			begin_ = t_begin_;
+			end_ = t_end_;
+			stroage_ = t_stroage_;
+			return iterator(begin_ + dis);
+		}
+		else {
+			const_iterator current = cend();
+			for (; current != pos; --current) {
+				current = --current;
+			}
+			*pos = T(value);
+			end_++;
+			return iterator(begin_ + dis);
+		}
 	}
 
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(const_iterator pos, size_type count, const T& value) {
-		
+		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
+		if (end_ + count > stroage_) {
+			size_type new_size = size() > count ? 2 * size() : 2 * count;
+			T* t_begin_ = data_alloc::allocate(new_size);
+			T* t_end_ = t_begin_ + size() + count;
+			T* t_stroage_ = t_begin_ + (((sizeof(T)*new_size + 7) / 8) * 8) / sizeof(T);
+
+			uninitialized_copy(cbegin(), pos, t_begin_);
+			for (size_type i = 0; i < count; i++) {
+				data_alloc::construct(t_begin_ + dis + i, value);
+			}
+			uninitialized_copy(pos, cend(), t_begin_ + dis + count);
+
+			delete_data_and_memory();
+			begin_ = t_begin_;
+			end_ = t_end_;
+			stroage_ = t_stroage_;
+			return iterator(begin_ + dis);
+		}
+		else {
+			T* current = end_ + count - 1;
+			for (; current >= begin_ + dis ; --current) {
+				*current = *(--current);
+			}
+			for (size_type i = 0; i < count; i++) {
+				data_alloc::construct(t_begin_ + dis + i, value);
+			}
+			return iterator(begin_ + dis);
+		}
 	}
 
 	template<class T, class Allocator>
 	template<class InputIt>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(const_iterator pos, InputIt first, InputIt last) {
-		
+		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
+		size_type count = static_cast<size_type>(distance(first, last));
+		if (end_ + count > stroage_) {
+			size_type new_size = size() > count ? 2 * size() : 2 * count;
+			T* t_begin_ = data_alloc::allocate(new_size);
+			T* t_end_ = t_begin_ + size() + count;
+			T* t_stroage_ = t_begin_ + (((sizeof(T)*new_size + 7) / 8) * 8) / sizeof(T);
+
+			uninitialized_copy(cbegin(), pos, t_begin_);
+			uninitialized_copy(first, last, t_begin_ + dis);
+			uninitialized_copy(pos, cend(), t_begin_ + dis + count);
+
+			delete_data_and_memory();
+			begin_ = t_begin_;
+			end_ = t_end_;
+			stroage_ = t_stroage_;
+			return iterator(begin_ + dis);
+		}
+		else {
+			T* current = end_ + count - 1;
+			for (; current >= begin_ + dis; --current) {
+				*current = *(--current);
+			}
+			uninitialized_copy(first, last, begin_ + dis);
+			return iterator(begin_ + dis);
+		}
 	}
 
 	template<class T, class Allocator>
@@ -413,5 +519,10 @@ namespace d_stl {
 		end_ = t_end_;
 		stroage_ = t_stroage_;
 	}
+
+	//difference between uninitialized_copy() and copy()
+	//first for allocated but not constructed memory
+	//second for replace(called function operator==())
+	
 }
 #endif 
