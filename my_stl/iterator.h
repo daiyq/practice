@@ -49,7 +49,14 @@ namespace d_stl {
 	template<class InputIt>
 	typename iterator_traits<InputIt>::difference_type
 		distance(InputIt first, InputIt last) {
-
+		typename iterator_traits<InputIt>::difference_type distance = 0;
+		if (typename iterator_traits<InputIt>::iterator_category == random_access_iterator_tag) {
+			return (last - first);
+		}
+		for (; first != last; first++) {
+			distance++;
+		}
+		return distance;
 	}
 
 	template<class Iterator>
