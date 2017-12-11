@@ -612,7 +612,7 @@ namespace d_stl {
 
 	//difference between uninitialized_copy() and copy()
 	//first for allocated but not constructed memory
-	//second for replace(called function operator==())
+	//second for replace(called function operator=())
 	
 }
 #endif 
