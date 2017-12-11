@@ -7,6 +7,7 @@ typedef std::ptrdiff_t difference_type;
 #include <initializer_list>
 #include "iterator.h"
 #include "memory.h"
+#include "algorithm.h"
 
 namespace d_stl {
 
@@ -125,22 +126,22 @@ namespace d_stl {
 		}
 
 		reverse_iterator rbegin() noexcept {
-			return reverse_iterator(end_ - 1);
+			return reverse_iterator(end_);
 		}
 		const_reverse_iterator rbegin() const noexcept {
-			return reverse_iterator(end_ - 1);
+			return reverse_iterator(end_);
 		}
 		const_reverse_iterator crbegin() const noexcept {
-			return const_reverse_iterator(end_ - 1);
+			return const_reverse_iterator(end_);
 		}
 		reverse_iterator rend() noexcept {
-			return reverse_iterator(begin_ - 1);
+			return reverse_iterator(begin_);
 		}
 		const_reverse_iterator rend() const noexcept {
-			return reverse_iterator(begin_ - 1);
+			return reverse_iterator(begin_);
 		}		
 		const_reverse_iterator crend() const noexcept {
-			return const_reverse_iterator(begin_ - 1);
+			return const_reverse_iterator(begin_);
 		}
 
 		bool empty() const noexcept {
@@ -174,12 +175,16 @@ namespace d_stl {
 		
 	private:
 		//allocate memory, initialize begin_, end_ and stroage_
-		void allocate(size_type size);
+		T* allocate(size_type size);
+		void ininitialized(size_type size);
+		void deallocate(T* p, size_type n);
 
+		void destory(T* first, T* last);
 		void delete_data_and_memory();
 		//clean, reallocate memory, initialize begin_, end_ and stroage_
 		//but not construct
-		void clean_and_reallocate(std::size_t need_size);
+		void destory_and_reallocate(size_type need_size);
+		void copy_and_reallocate(size_type need_size);
 		
 
 	public:
@@ -198,13 +203,13 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	vector<T, Allocator>::vector(size_type count) {
-		allocate(count);
+		ininitialized(count);
 		uninitialized_fill_n(begin_, count, T());
 	}
 
 	template<class T, class Allocator>
 	vector<T, Allocator>::vector(size_type count, size_type T& value) {
-		allocate(count);
+		ininitialized(count);
 		uninitialized_fill_n(begin_, count, value);
 	}
 
@@ -212,14 +217,14 @@ namespace d_stl {
 	template<class InputIt>
 	vector<T, Allocator>::vector(InputIt first, InputIt last) {
 		size_type count = static_cast<size_type>(distance(first, last));
-		allocate(count);
+		ininitialized(count);
 		uninitialized_copy(first, last, begin_);
 	}
 
 	template<class T, class Allocator>
 	vector<T, Allocator>::vector(const vector& other) {
 		size_type count = other.size();
-		allocate(count);
+		ininitialized(count);
 		uninitialized_copy(other.begin(), other.end(), begin_);
 	}
 	
@@ -247,7 +252,10 @@ namespace d_stl {
 	vector<T, Allocator>& vector<T, Allocator>::operator=(const vector& other) {
 		if (this != &other) {
 			if (capacity() < other.size()) {
-				clean_and_reallocate(other.size());
+				destory_and_reallocate(other.size());	
+			}
+			else {
+				destory(begin_, end_);
 			}
 			uninitialized_copy(other.begin(), other.end(), begin_);
 		}
@@ -274,7 +282,11 @@ namespace d_stl {
 	template<class T, class Allocator>
 	void vector<T, Allocator>::assign(size_type count, size_type T& value) {
 		if (capacity() < count) {
-			clean_and_reallocate(count);
+			destory_and_reallocate(count);
+		}
+		else {
+			destory(begin_, end_);
+			end_ = begin_ + count;
 		}
 		uninitialized_fill_n(begin_, count, value);
 	}
@@ -284,7 +296,11 @@ namespace d_stl {
 	void vector<T, Allocator>::assign(InputIt first, InputIt last) {
 		size_type count = static_cast<size_type>(distance(first, last));
 		if (capacity() < count) {
-			clean_and_reallocate(count);
+			destory_and_reallocate(count);
+		}
+		else {
+			destory(begin_, end_);
+			end_ = begin_ + count;
 		}
 		uninitialized_copy(first, last, begin_);
 	}
@@ -299,7 +315,7 @@ namespace d_stl {
 	void vector<T, Allocator>::reserve(size_type new_cap) {
 		if (new_cap <= capacity())
 			return;
-		T* t_begin_ = data_alloc::allocate(new_cap);
+		T* t_begin_ = allocate(new_cap);
 		T* t_end_ = t_begin_ + new_cap;
 		T* t_stroage_ = t_begin_ + (((sizeof(T)*new_cap + 7) / 8) * 8) / sizeof(T);
 
@@ -312,13 +328,13 @@ namespace d_stl {
 	
 	template<class T, class Allocator>
 	void vector<T, Allocator>::shrink_to_fit() {
-		data_alloc::deallocate(end_, stroage_ - end_);
+		deallocate(end_, stroage_ - end_);
 		stroage_ = end_;
 	}
 
 	template<class T, class Allocator>
 	void vector<T, Allocator>::clean() {
-		data_alloc::destory(begin_, end_);
+		destory(begin_, end_);
 	}
 
 	//insert, push, pop
@@ -327,15 +343,13 @@ namespace d_stl {
 		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
 		if (end_ = stroage_) {
 			size_type new_size = 2 * size();
-			T* t_begin_ = data_alloc::allocate(new_size);
+			T* t_begin_ = allocate(new_size);
 			T* t_end_ = t_begin_ + size() + 1;
 			T* t_stroage_ = t_begin_ + (((sizeof(T)*new_size + 7) / 8) * 8) / sizeof(T);
 
 			uninitialized_copy(cbegin(), pos, t_begin_);
-			
-			T* t = t_begin_ + dis;
-			*t = T(value);
-			uninitialized_copy(pos, cend(), t + 1);
+			uninitialized_fill_n(t_begin_ + dis, 1, value);
+			uninitialized_copy(pos, cend(), t_begin_ + dis + 1);
 
 			delete_data_and_memory();
 			begin_ = t_begin_;
@@ -344,14 +358,17 @@ namespace d_stl {
 			return iterator(begin_ + dis);
 		}
 		else {
-			const_iterator current = cend();
-			for (; current != pos; --current) {
-				current = --current;
+			if (pos == cend()) {
+				uninitialized_fill_n(end_, 1, value);
 			}
-			*pos = T(value);
+			else {
+				uninitialized_copy(end_ - 1, end_, end_ + 1);
+				copy_backward(begin_ + dis, end_ - 1, end_);
+				*(begin_ + dis) = value;
+			}
 			end_++;
 			return iterator(begin_ + dis);
-		}
+		}	
 	}
 
 	template<class T, class Allocator>
@@ -359,14 +376,13 @@ namespace d_stl {
 		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
 		if (end_ = stroage_) {
 			size_type new_size = 2 * size();
-			T* t_begin_ = data_alloc::allocate(new_size);
+			T* t_begin_ = allocate(new_size);
 			T* t_end_ = t_begin_ + size() + 1;
 			T* t_stroage_ = t_begin_ + (((sizeof(T)*new_size + 7) / 8) * 8) / sizeof(T);
 
 			uninitialized_copy(cbegin(), pos, t_begin_);
-			T* t = t_begin_ + dis;
-			*t = T(value);
-			uninitialized_copy(++pos, cend(), t + 1);
+			uninitialized_fill_n(t_begin_ + dis, 1, T(value));
+			uninitialized_copy(pos, cend(), t_begin_ + dis + 1);
 
 			delete_data_and_memory();
 			begin_ = t_begin_;
@@ -375,14 +391,17 @@ namespace d_stl {
 			return iterator(begin_ + dis);
 		}
 		else {
-			const_iterator current = cend();
-			for (; current != pos; --current) {
-				current = --current;
+			if (pos == cend()) {
+				uninitialized_fill_n(end_, 1, value);
 			}
-			*pos = T(value);
+			else {
+				uninitialized_copy(end_ - 1, end_, end_ + 1);
+				copy_backward(begin_ + dis, end_ - 1, end_);
+				*(begin_ + dis) = value;
+			}
 			end_++;
 			return iterator(begin_ + dis);
-		}
+		}	
 	}
 
 	template<class T, class Allocator>
@@ -390,14 +409,12 @@ namespace d_stl {
 		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
 		if (end_ + count > stroage_) {
 			size_type new_size = size() > count ? 2 * size() : 2 * count;
-			T* t_begin_ = data_alloc::allocate(new_size);
+			T* t_begin_ = allocate(new_size);
 			T* t_end_ = t_begin_ + size() + count;
 			T* t_stroage_ = t_begin_ + (((sizeof(T)*new_size + 7) / 8) * 8) / sizeof(T);
 
 			uninitialized_copy(cbegin(), pos, t_begin_);
-			for (size_type i = 0; i < count; i++) {
-				data_alloc::construct(t_begin_ + dis + i, value);
-			}
+			uninitialized_fill_n(t_begin_ + dis, count, value);
 			uninitialized_copy(pos, cend(), t_begin_ + dis + count);
 
 			delete_data_and_memory();
@@ -407,13 +424,18 @@ namespace d_stl {
 			return iterator(begin_ + dis);
 		}
 		else {
-			T* current = end_ + count - 1;
-			for (; current >= begin_ + dis ; --current) {
-				*current = *(--current);
+			//different area
+			if ((size() - dis) > count) {
+				uninitialized_copy(end_ - count, end_, end_);
+				copy_backward(begin_ + dis, end_ - count, end_);
+				destory(begin_ + dis, begin_ + dis + count);	
 			}
-			for (size_type i = 0; i < count; i++) {
-				data_alloc::construct(t_begin_ + dis + i, value);
+			else {
+				uninitialized_copy(begin_ + dis, end_, begin_ + dis + count);
+				destory(begin_ + dis, end_);	
 			}
+			uninitialized_fill_n(begin_ + dis, count, value);
+			end_ += count;
 			return iterator(begin_ + dis);
 		}
 	}
@@ -425,7 +447,7 @@ namespace d_stl {
 		size_type count = static_cast<size_type>(distance(first, last));
 		if (end_ + count > stroage_) {
 			size_type new_size = size() > count ? 2 * size() : 2 * count;
-			T* t_begin_ = data_alloc::allocate(new_size);
+			T* t_begin_ = allocate(new_size);
 			T* t_end_ = t_begin_ + size() + count;
 			T* t_stroage_ = t_begin_ + (((sizeof(T)*new_size + 7) / 8) * 8) / sizeof(T);
 
@@ -440,11 +462,17 @@ namespace d_stl {
 			return iterator(begin_ + dis);
 		}
 		else {
-			T* current = end_ + count - 1;
-			for (; current >= begin_ + dis; --current) {
-				*current = *(--current);
+			if ((size() - dis) > count) {
+				uninitialized_copy(end_ - count, end_, end_);
+				copy_backward(begin_ + dis, begin_ + dis + count, end_);
+				destory(begin_ + dis, begin_ + dis + count);
+			}
+			else {
+				uninitialized_copy(begin_ + dis, end_, begin_ + dis + count);
+				destory(begin_ + dis, end_);
 			}
 			uninitialized_copy(first, last, begin_ + dis);
+			end_ += count;
 			return iterator(begin_ + dis);
 		}
 	}
@@ -455,38 +483,73 @@ namespace d_stl {
 	}
 
 	template<class T, class Allocator>
-	typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(const_iterator pos) {
-		
+	typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(const_iterator pos) {	
+		erase(pos, pos + 1);
 	}
 
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(const_iterator first, const_iterator last) {
-		
+		size_type count = static_cast<size_type>(distance(first, last));
+		copy(last, cend(), first);
+		destory(end_ - count, end_);
+		return last;
 	}
 
 	template<class T, class Allocator>
 	void vector<T, Allocator>::push_back(const T& value) {
-
+		size_type old_size = size();
+		if (end_ = stroage_) {
+			size_type new_size = 2 * size();
+			copy_and_reallocate(new_size);
+		}
+		uninitialized_fill_n(begin_ + old_size, 1, value);
+		end_ = begin_ + old_size + 1;
 	}
 
 	template<class T, class Allocator>
 	void vector<T, Allocator>::push_back(T&& value) {
-
+		size_type old_size = size();
+		if (end_ = stroage_) {
+			size_type new_size = 2 * size();
+			copy_and_reallocate(new_size);
+		}
+		uninitialized_fill_n(begin_ + old_size, 1, value);
+		end_ = begin_ + old_size + 1;
 	}
 
 	template<class T, class Allocator>
 	void vector<T, Allocator>::pop_back() {
-
+		if (size() == 0)
+			return;
+		destory(end_ - 1, end_);
+		end_--;
 	}
 
 	template<class T, class Allocator>
 	void vector<T, Allocator>::resize(size_type count) {
-
+		resize(count, value_type());
 	}
 
 	template<class T, class Allocator>
 	void vector<T, Allocator>::resize(size_type count, const value_type& value) {
-
+		if (size() > count) {
+			destory(begin_ + count, end_);
+			end_ = begin_ + count;
+		}
+		else if (size() < count) {
+			if (capacity() >= count) {
+				uninitialized_fill_n(end_, count - size(), value);
+			}
+			else {
+				size_type old_size = size();
+				size_type new_size = count;
+				copy_and_reallocate(new_size);
+				uninitialized_fill_n(begin_ + old_size, count - size(), value);
+			}
+			end_ = begin_ + count;
+		}
+		else
+			return;
 	}
 
 	template<class T, class Allocator>
@@ -496,27 +559,54 @@ namespace d_stl {
 
 	//private function to be called to allocate, deallocate and reallocate
 	template<class T, class Allocator>
-	void vector<T, Allocator>::allocate(size_type size) {
-		begin_ = data_alloc::allocate(size);
+	T* vector<T, Allocator>::allocate(size_type size) {
+		T* t = data_alloc::allocate(size);
+		return t;
+	}
+
+	template<class T, class Allocator>
+	void vector<T, Allocator>::ininitialized(size_type size) {
+		begin_ = allocate(size);
 		end_ = begin_ + size;
 		stroage_ = begin_ + (((sizeof(T)*size + 7) / 8) * 8) / sizeof(T);
 	}
 
 	template<class T, class Allocator>
-	void vector<T, Allocator>::delete_data_and_memory() {
-		data_alloc::destory(begin_, end_);
-		data_alloc::deallocate(begin_, capacity());
+	void vector<T, Allocator>::deallocate(T* p, size_type n) {
+		data_alloc::deallocate(p, n);
 	}
 
 	template<class T, class Allocator>
-	void vector<T, Allocator>::clean_and_reallocate(std::size_t need_size) {
-		T* t_begin_ = data_alloc::allocate(need_size);
+	void vector<T, Allocator>::destory(T* first, T* last) {
+		data_alloc::destory(first, last);
+	}
+
+	template<class T, class Allocator>
+	void vector<T, Allocator>::delete_data_and_memory() {
+		destory(begin_, end_);
+		deallocate(begin_, capacity());
+	}
+
+	template<class T, class Allocator>
+	void vector<T, Allocator>::destory_and_reallocate(size_type need_size) {
+		T* t_begin_ = allocate(need_size);
 		T* t_end_ = t_begin_ + need_size;
 		T* t_stroage_ = t_begin_ + (((sizeof(T)*need_size + 7) / 8) * 8) / sizeof(T);
 
 		delete_data_and_memory();
 		begin_ = t_begin_;
 		end_ = t_end_;
+		stroage_ = t_stroage_;
+	}
+
+	template<class T, class Allocator>
+	void vector<T, Allocator>::copy_and_reallocate(size_type need_size) {
+		T* t_begin_ = allocate(need_size);
+		T* t_stroage_ = t_begin_ + (((sizeof(T)*need_size + 7) / 8) * 8) / sizeof(T);
+		
+		uninitialized_copy(begin_, end_, t_begin_);
+		delete_data_and_memory();
+		begin_ = t_begin_;
 		stroage_ = t_stroage_;
 	}
 
