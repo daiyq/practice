@@ -8,6 +8,7 @@ namespace d_stl {
 	char* alloc::start_free = nullptr;
 	char* alloc::end_free = nullptr;
 	std::size_t alloc::heap_size = 0;
+	alloc::obj* alloc::free_list[NUMBER_FREE_LIST] = { nullptr,nullptr, nullptr,nullptr, nullptr,nullptr, nullptr,nullptr,nullptr,nullptr, nullptr,nullptr, nullptr,nullptr, nullptr,nullptr };
 
 	std::size_t alloc::round_up(std::size_t bytes) {
 		return ((bytes + ALIGN - 1)&~(ALIGN - 1));

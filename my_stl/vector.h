@@ -1,7 +1,6 @@
 #ifndef D_VECTOR_H_
 #define D_VECTOR_H_
 
-typedef std::ptrdiff_t difference_type;
 #include <cstddef> //ptrdiff_t, size_t
 #include <stdexcept> //throw
 #include <initializer_list>
@@ -11,12 +10,13 @@ typedef std::ptrdiff_t difference_type;
 #include "algorithm.h"
 
 namespace d_stl {
-
+	/*
 	template<class T, class Allocator = d_stl::allocator<T>>
 	class vector;
 
 	template<class T>
 	void swap(const vector<T>& lhs, const vector<T>& rhs);
+	*/
 
 	template<class T, class Allocator = d_stl::allocator<T>>
 	class vector {
@@ -41,7 +41,7 @@ namespace d_stl {
 
 		vector();
 		explicit vector(size_type count);
-		vector(size_type count, size_type T& value);
+		vector(size_type count, const T& value);
 		template<class InputIt>
 		vector(InputIt first, InputIt last);
 		vector(const vector& other);
@@ -53,7 +53,7 @@ namespace d_stl {
 		vector& operator=(vector&& other);
 		vector& operator=(std::initializer_list<T> init);
 
-		void assign(size_type count, size_type T& value);
+		void assign(size_type count, const T& value);
 		template<class InputIt>
 		void assign(InputIt first, InputIt last);
 		void assign(std::initializer_list<T> init);
@@ -148,7 +148,7 @@ namespace d_stl {
 		}
 		void shrink_to_fit(); //removed unused capacity 
 
-		void clean() noexcept;
+		void clean();
 		iterator insert(const_iterator pos, const T& value); // return the first element inserted
 		iterator insert(const_iterator pos, T&& value);
 		iterator insert(const_iterator pos, size_type count, const T& value);
@@ -162,10 +162,9 @@ namespace d_stl {
 		void pop_back();
 		void resize(size_type count);
 		void resize(size_type count, const value_type& value);
-		void swap(vector& other) noexcept; //exchange contents, no move, copy etc.
+		void swap(vector& other); //exchange contents, no move, copy etc.
 
-		friend void swap<T>(const vector& lhs, const vector& rhs);
-				
+						
 	private:
 		//allocate memory, initialize begin_, end_ and stroage_
 		T* allocate(size_type size);
@@ -193,7 +192,7 @@ namespace d_stl {
 	}
 
 	template<class T, class Allocator>
-	vector<T, Allocator>::vector(size_type count, size_type T& value) {
+	vector<T, Allocator>::vector(size_type count, const T& value) {
 		ininitialized(count);
 		uninitialized_fill_n(begin_, count, value);
 	}
@@ -275,7 +274,7 @@ namespace d_stl {
 	}
 
 	template<class T, class Allocator>
-	void vector<T, Allocator>::assign(size_type count, size_type T& value) {
+	void vector<T, Allocator>::assign(size_type count, const T& value) {
 		if (capacity() < count) {
 			destory_and_reallocate(count);
 		}
@@ -587,16 +586,18 @@ namespace d_stl {
 	template<class T, class Allocator>
 	void vector<T, Allocator>::swap(vector& other) {
 		if (this != &other) {
-			swap(*this, other);
+			//swap(*this, other);
 		}
 	}
 
+	/*
 	template<class T>
 	void swap(const vector<T>& lhs, const vector<T>& rhs) {
 		std::swap(lhs.begin_, rhs.begin_);
 		std::swap(lhs.end_, rhs.end_);
 		std::swap(lhs.stroage_, rhs.stroage_);
 	}
+	*/
 	//private function to be called to allocate, deallocate and reallocate
 	template<class T, class Allocator>
 	T* vector<T, Allocator>::allocate(size_type size) {
