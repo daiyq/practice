@@ -2,6 +2,7 @@
 #define D_ITERATOR_
 
 #include <cstddef> //size_t
+#include <type_traits>
 
 namespace d_stl {
 	
@@ -65,15 +66,34 @@ namespace d_stl {
 		typedef Reference           reference;
 	};
 
-
-	template <class Iterator>
-	struct iterator_traits
+	template<class,class=void>
+	struct iterator_traits_base {
+		//primary template handles types that have no nested ::type member
+	};
+	
+	//specialization recognizes
+	//pay attention to meaning of void_t
+	template<class Iterator>
+	struct iterator_traits_base<Iterator, std::void_t<
+		typename Iterator::iterator_category,
+		typename Iterator::value_type,
+		typename Iterator::difference_type,
+		typename Iterator::pointer,
+		typename Iterator::reference
+		>>
 	{
-		typedef typename Iterator::iterator_category iterator_category;
-		typedef typename Iterator::value_type        value_type;
-		typedef typename Iterator::difference_type   difference_type;
-		typedef typename Iterator::pointer           pointer;
-		typedef typename Iterator::reference         reference;
+		using iterator_category = typename Iterator::iterator_category;
+		using value_type = typename Iterator::value_type;
+		using difference_type = typename Iterator::difference_type;
+		using pointer = typename Iterator::pointer;
+		using reference = typename Iterator::reference;
+	};
+
+	//An iterator traits which value_type is always the vlau_type
+	template <class Iterator>
+	struct iterator_traits : iterator_traits_base<Iterator>
+	{
+		
 	};
 
 	template <class T>
