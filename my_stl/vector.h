@@ -1,23 +1,20 @@
 #ifndef D_VECTOR_H_
 #define D_VECTOR_H_
 
+#include <cstdio>
 #include <cstddef> //ptrdiff_t, size_t
 #include <stdexcept> //throw
 #include <initializer_list>
 #include <algorithm>
 #include "iterator.h"
+#include <iterator>
 #include "memory.h"
 #include "algorithm.h"
 
 namespace d_stl {
-	/*
-	template<class T, class Allocator = d_stl::allocator<T>>
-	class vector;
 
-	template<class T>
-	void swap(const vector<T>& lhs, const vector<T>& rhs);
-	*/
-
+	std::iterator_traits<int> i;
+	
 	template<class T, class Allocator = d_stl::allocator<T>>
 	class vector {
 	private:
@@ -32,10 +29,10 @@ namespace d_stl {
 		typedef std::ptrdiff_t difference_type;
 		typedef value_type& reference;
 		typedef const value_type& const_reference;
-		typedef T* pointer;
-		typedef const T* const_pointer;
-		typedef T* iterator;
-		typedef const T* const_iterator;
+		typedef value_type* pointer;
+		typedef const value_type* const_pointer;
+		typedef value_type* iterator;
+		typedef const value_type* const_iterator;
 		typedef d_stl::reverse_iterator<iterator> reverse_iterator;
 		typedef d_stl::reverse_iterator<const_iterator> const_reverse_iterator;
 
@@ -48,6 +45,7 @@ namespace d_stl {
 		vector(vector&& other);
 		vector(std::initializer_list<T> init);
 		~vector();
+
 
 		vector& operator=(const vector& other);
 		vector& operator=(vector&& other);
@@ -130,7 +128,7 @@ namespace d_stl {
 		}
 		const_reverse_iterator rend() const noexcept {
 			return reverse_iterator(begin_);
-		}		
+		}
 		const_reverse_iterator crend() const noexcept {
 			return const_reverse_iterator(begin_);
 		}
@@ -164,7 +162,7 @@ namespace d_stl {
 		void resize(size_type count, const value_type& value);
 		void swap(vector& other); //exchange contents, no move, copy etc.
 
-						
+
 	private:
 		//allocate memory, initialize begin_, end_ and stroage_
 		T* allocate(size_type size);
@@ -177,41 +175,48 @@ namespace d_stl {
 		//but not construct
 		void destory_and_reallocate(size_type need_size);
 		void copy_and_reallocate(size_type need_size);
-		
+
 	};
 
 	//错误地点，两个模板参数都要写全，即使是有默认模板参数，也要写全！！
 	//construction etc.
 	template<class T, class Allocator>
-	vector<T, Allocator>::vector() :begin_(nullptr), end_(nullptr), stroage_(nullptr) {}
+	vector<T, Allocator>::vector() :begin_(nullptr), end_(nullptr), stroage_(nullptr) {
+		std::printf("blank\n");
+	}
 
 	template<class T, class Allocator>
 	vector<T, Allocator>::vector(size_type count) {
+		std::printf("only number\n");
 		ininitialized(count);
 		uninitialized_fill_n(begin_, count, T());
 	}
 
 	template<class T, class Allocator>
 	vector<T, Allocator>::vector(size_type count, const T& value) {
+		std::printf("number and value\n");
 		ininitialized(count);
 		uninitialized_fill_n(begin_, count, value);
 	}
-
+	
 	template<class T, class Allocator>
 	template<class InputIt>
 	vector<T, Allocator>::vector(InputIt first, InputIt last) {
+		std::printf("Iterator\n");
+		/*
 		size_type count = static_cast<size_type>(distance(first, last));
 		ininitialized(count);
 		uninitialized_copy(first, last, begin_);
+		*/
 	}
-
+	
 	template<class T, class Allocator>
 	vector<T, Allocator>::vector(const vector& other) {
 		size_type count = other.size();
 		ininitialized(count);
 		uninitialized_copy(other.begin(), other.end(), begin_);
 	}
-	
+
 	template<class T, class Allocator>
 	vector<T, Allocator>::vector(vector&& other) {
 		begin_ = other.begin();
@@ -231,14 +236,14 @@ namespace d_stl {
 	vector<T, Allocator>::~vector() {
 		delete_data_and_memory();
 	}
-	
-	
+
+
 	//function about value assignment
 	template<class T, class Allocator>
 	vector<T, Allocator>& vector<T, Allocator>::operator=(const vector& other) {
 		if (this != &other) {
 			if (capacity() < other.size()) {
-				destory_and_reallocate(other.size());	
+				destory_and_reallocate(other.size());
 			}
 			else {
 				destory(begin_, end_);
@@ -325,7 +330,7 @@ namespace d_stl {
 		end_ = t_end_;
 		stroage_ = t_stroage_;
 	}
-	
+
 	template<class T, class Allocator>
 	void vector<T, Allocator>::shrink_to_fit() {
 		deallocate(end_, stroage_ - end_);
@@ -368,7 +373,7 @@ namespace d_stl {
 			}
 			end_++;
 			return iterator(begin_ + dis);
-		}	
+		}
 	}
 
 	template<class T, class Allocator>
@@ -401,7 +406,7 @@ namespace d_stl {
 			}
 			end_++;
 			return iterator(begin_ + dis);
-		}	
+		}
 	}
 
 	template<class T, class Allocator>
@@ -428,11 +433,11 @@ namespace d_stl {
 			if ((size() - dis) > count) {
 				uninitialized_copy(end_ - count, end_, end_);
 				copy_backward(begin_ + dis, end_ - count, end_);
-				destory(begin_ + dis, begin_ + dis + count);	
+				destory(begin_ + dis, begin_ + dis + count);
 			}
 			else {
 				uninitialized_copy(begin_ + dis, end_, begin_ + dis + count);
-				destory(begin_ + dis, end_);	
+				destory(begin_ + dis, end_);
 			}
 			uninitialized_fill_n(begin_ + dis, count, value);
 			end_ += count;
@@ -514,7 +519,7 @@ namespace d_stl {
 	}
 
 	template<class T, class Allocator>
-	typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(const_iterator pos) {	
+	typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(const_iterator pos) {
 		erase(pos, pos + 1);
 	}
 
@@ -529,8 +534,9 @@ namespace d_stl {
 	template<class T, class Allocator>
 	void vector<T, Allocator>::push_back(const T& value) {
 		size_type old_size = size();
-		if (end_ = stroage_) {
-			size_type new_size = 2 * size();
+		if (end_ == stroage_) {
+			size_type dis_size = old_size == 0 ? 1 : old_size;
+			size_type new_size = 2 * dis_size;
 			copy_and_reallocate(new_size);
 		}
 		uninitialized_fill_n(begin_ + old_size, 1, value);
@@ -540,8 +546,9 @@ namespace d_stl {
 	template<class T, class Allocator>
 	void vector<T, Allocator>::push_back(T&& value) {
 		size_type old_size = size();
-		if (end_ = stroage_) {
-			size_type new_size = 2 * size();
+		if (end_ == stroage_) {
+			size_type dis_size = old_size == 0 ? 1 : old_size;
+			size_type new_size = 2 * dis_size;
 			copy_and_reallocate(new_size);
 		}
 		uninitialized_fill_n(begin_ + old_size, 1, value);
@@ -586,18 +593,13 @@ namespace d_stl {
 	template<class T, class Allocator>
 	void vector<T, Allocator>::swap(vector& other) {
 		if (this != &other) {
-			//swap(*this, other);
+			std::swap(begin_, other.begin_);
+			std::swap(end_, other.end_);
+			std::swap(stroage_, other.stroage_);
 		}
 	}
 
-	/*
-	template<class T>
-	void swap(const vector<T>& lhs, const vector<T>& rhs) {
-		std::swap(lhs.begin_, rhs.begin_);
-		std::swap(lhs.end_, rhs.end_);
-		std::swap(lhs.stroage_, rhs.stroage_);
-	}
-	*/
+
 	//private function to be called to allocate, deallocate and reallocate
 	template<class T, class Allocator>
 	T* vector<T, Allocator>::allocate(size_type size) {
@@ -644,14 +646,14 @@ namespace d_stl {
 	void vector<T, Allocator>::copy_and_reallocate(size_type need_size) {
 		T* t_begin_ = allocate(need_size);
 		T* t_stroage_ = t_begin_ + (((sizeof(T)*need_size + 7) / 8) * 8) / sizeof(T);
-		
+
 		uninitialized_copy(begin_, end_, t_begin_);
 		delete_data_and_memory();
 		begin_ = t_begin_;
 		stroage_ = t_stroage_;
 	}
 
-		
+
 	template<class T, class Allocator = d_stl::allocator<T>>
 	bool operator==(const vector<T, Allocator>& lhs, const vector<T, Allocator>& rhs) {
 		if (lhs.size() != rhs.size())
@@ -698,5 +700,6 @@ namespace d_stl {
 	bool operator>(const vector<T, Allocator>& lhs, const vector<T, Allocator>& rhs) {
 		return (!operator<=(lhs, rhs));
 	}
+
 }
 #endif 
