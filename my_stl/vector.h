@@ -174,8 +174,8 @@ namespace d_stl {
 		void delete_data_and_memory();
 		//clean, reallocate memory, initialize begin_, end_ and stroage_
 		//but not construct
-		void destory_and_reallocate(size_type need_size);
-		void copy_and_reallocate(size_type need_size);
+		void reallocate_and_destory(size_type need_size);
+		void reallocate_and_copy(size_type need_size);
 
 		
 		void vector_base(size_type count, const value_type& value, std::true_type);
@@ -248,13 +248,7 @@ namespace d_stl {
 	template<class T, class Allocator>
 	vector<T, Allocator>& vector<T, Allocator>::operator=(const vector& other) {
 		if (this != &other) {
-			if (capacity() < other.size()) {
-				destory_and_reallocate(other.size());
-			}
-			else {
-				destory(begin_, end_);
-			}
-			uninitialized_copy(other.begin(), other.end(), begin_);
+			assign_base(other.begin(), other.end(), typename std::is_integral<iterator>::type());
 		}
 		return *this;
 	}
@@ -273,14 +267,7 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	vector<T, Allocator>& vector<T, Allocator>::operator=(std::initializer_list<T> init) {
-		if (capacity() < init.size()) {
-			destory_and_reallocate(init.size());
-		}
-		else {
-			destory(begin_, end_);
-		}
-		uninitialized_copy(init.begin(), init.end(), begin_);
-
+		assign_base(init.begin(), init.end(), typename std::is_integral<iterator>::type());
 		return *this;
 	}
 
@@ -297,13 +284,7 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	void vector<T, Allocator>::assign(std::initializer_list<T> init) {
-		if (capacity() < init.size()) {
-			destory_and_reallocate(init.size());
-		}
-		else {
-			destory(begin_, end_);
-		}
-		uninitialized_copy(init.begin(), init.end(), begin_);
+		assign_base(init.begin(), init.end(), typename std::is_integral<iterator>::type());
 	}
 
 	//functions about size
@@ -474,7 +455,7 @@ namespace d_stl {
 		if (end_ == stroage_) {
 			size_type dis_size = old_size == 0 ? 1 : old_size;
 			size_type new_size = 2 * dis_size;
-			copy_and_reallocate(new_size);
+			reallocate_and_copy(new_size);
 		}
 		uninitialized_fill_n(begin_ + old_size, 1, value);
 		end_ = begin_ + old_size + 1;
@@ -486,7 +467,7 @@ namespace d_stl {
 		if (end_ == stroage_) {
 			size_type dis_size = old_size == 0 ? 1 : old_size;
 			size_type new_size = 2 * dis_size;
-			copy_and_reallocate(new_size);
+			reallocate_and_copy(new_size);
 		}
 		uninitialized_fill_n(begin_ + old_size, 1, value);
 		end_ = begin_ + old_size + 1;
@@ -518,7 +499,7 @@ namespace d_stl {
 			else {
 				size_type old_size = size();
 				size_type new_size = count;
-				copy_and_reallocate(new_size);
+				reallocate_and_copy(new_size);
 				uninitialized_fill_n(begin_ + old_size, count - size(), value);
 			}
 			end_ = begin_ + count;
@@ -568,7 +549,7 @@ namespace d_stl {
 	}
 
 	template<class T, class Allocator>
-	void vector<T, Allocator>::destory_and_reallocate(size_type need_size) {
+	void vector<T, Allocator>::reallocate_and_destory(size_type need_size) {
 		T* t_begin_ = allocate(need_size);
 		T* t_end_ = t_begin_ + need_size;
 		T* t_stroage_ = t_begin_ + (((sizeof(T)*need_size + 7) / 8) * 8) / sizeof(T);
@@ -580,7 +561,7 @@ namespace d_stl {
 	}
 
 	template<class T, class Allocator>
-	void vector<T, Allocator>::copy_and_reallocate(size_type need_size) {
+	void vector<T, Allocator>::reallocate_and_copy(size_type need_size) {
 		T* t_begin_ = allocate(need_size);
 		T* t_stroage_ = t_begin_ + (((sizeof(T)*need_size + 7) / 8) * 8) / sizeof(T);
 
@@ -609,7 +590,7 @@ namespace d_stl {
 	template<class T, class Allocator>
 	void vector<T, Allocator>::assign_base(size_type count, const value_type& value, std::true_type) {
 		if (capacity() < count) {
-			destory_and_reallocate(count);
+			reallocate_and_destory(count);
 		}
 		else {
 			destory(begin_, end_);
@@ -623,7 +604,7 @@ namespace d_stl {
 	void vector<T, Allocator>::assign_base(InputIt first, InputIt last, std::false_type) {
 		size_type count = static_cast<size_type>(distance(first, last));
 		if (capacity() < count) {
-			destory_and_reallocate(count);
+			reallocate_and_destory(count);
 		}
 		else {
 			destory(begin_, end_);
