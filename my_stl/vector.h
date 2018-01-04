@@ -8,7 +8,7 @@
 #include <type_traits>
 //#include <algorithm>
 #include "iterator.h"
-#include <iterator>
+#include <iterator> //distance()
 #include "memory.h"
 #include "algorithm.h"
 
@@ -44,18 +44,18 @@ namespace d_stl {
 		vector(InputIt first, InputIt last);
 		vector(const vector& other);
 		vector(vector&& other);
-		vector(std::initializer_list<T> init);
+		vector(std::initializer_list<T> init);//not finished
 		~vector();
 
 
 		vector& operator=(const vector& other);
 		vector& operator=(vector&& other);
-		vector& operator=(std::initializer_list<T> init);
+		vector& operator=(std::initializer_list<T> init);//not finished
 
 		void assign(size_type count, const value_type& value);
 		template<class InputIt>
 		void assign(InputIt first, InputIt last);
-		void assign(std::initializer_list<T> init);
+		void assign(std::initializer_list<T> init);//not finished
 
 		//bound checking
 		reference at(size_type pos) {
@@ -153,7 +153,7 @@ namespace d_stl {
 		iterator insert(const_iterator pos, size_type count, const value_type& value);
 		template<class InputIt>
 		iterator insert(const_iterator pos, InputIt first, InputIt last);
-		iterator insert(const_iterator pos, std::initializer_list<T> init);
+		iterator insert(const_iterator pos, std::initializer_list<T> init);//not finished
 		iterator erase(const_iterator pos); //return the following removed element
 		iterator erase(const_iterator first, const_iterator last);
 		void push_back(const value_type& value);
@@ -236,9 +236,9 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	vector<T, Allocator>::vector(std::initializer_list<T> init) {
-		size_type count = init.size();
-		ininitialized(count);
-		uninitialized_copy(init.begin(), init.end(), begin_);
+		//const_iterator tmp_first = init.begin();
+		//const_iterator tmp_end = init.end();
+		//vector_base(tmp_first, tmp_end, typename std::is_integral<const_iterator>::type());
 	}
 
 	template<class T, class Allocator>
@@ -270,8 +270,8 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	vector<T, Allocator>& vector<T, Allocator>::operator=(std::initializer_list<T> init) {
-		assign_base(init.begin(), init.end(), typename std::is_integral<iterator>::type());
-		return *this;
+		//assign_base(init.begin(), init.end(), typename std::is_integral<iterator>::type());
+		//return *this;
 	}
 
 	template<class T, class Allocator>
@@ -287,7 +287,7 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	void vector<T, Allocator>::assign(std::initializer_list<T> init) {
-		assign_base(init.begin(), init.end(), typename std::is_integral<iterator>::type());
+		//assign_base(init.begin(), init.end(), typename std::is_integral<iterator>::type());
 	}
 
 	//functions about size
@@ -402,7 +402,8 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(const_iterator pos, std::initializer_list<T> init) {
-		insert_base(pos, init.begin(), init.end(), typename std::is_integral<const_iterator>::type());
+		//insert_base(pos, init.begin(), init.end(), typename std::is_integral<const_iterator>::type());
+		
 		/*
 		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
 		size_type count = init.size();
