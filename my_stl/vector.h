@@ -8,7 +8,7 @@
 #include <type_traits>
 //#include <algorithm>
 #include "iterator.h"
-//#include <iterator>
+#include <iterator>
 #include "memory.h"
 #include "algorithm.h"
 
@@ -218,9 +218,12 @@ namespace d_stl {
 	
 	template<class T, class Allocator>
 	vector<T, Allocator>::vector(const vector& other) {
-		size_type count = other.size();
-		ininitialized(count);
-		uninitialized_copy(other.begin(), other.end(), begin_);
+		//size_type count = other.size();
+		//ininitialized(count);
+		//uninitialized_copy(other.begin(), other.end(), begin_);
+		const_iterator tmp_first = other.begin();
+		const_iterator tmp_end = other.end();
+		vector_base(tmp_first, tmp_end, typename std::is_integral<const_iterator>::type());
 	}
 
 	template<class T, class Allocator>
@@ -582,7 +585,9 @@ namespace d_stl {
 	template<class InputIt>
 	void vector<T, Allocator>::vector_base(InputIt first, InputIt last, std::false_type) {
 		std::printf("Iterator\n");
-		size_type count = static_cast<size_type>(distance(first, last));
+		size_type count = static_cast<size_type>(std::distance(first, last));
+		//TODO:
+		//distance() 
 		ininitialized(count);
 		uninitialized_copy(first, last, begin_);
 	}
