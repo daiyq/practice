@@ -147,7 +147,7 @@ namespace d_stl {
 		}
 		void shrink_to_fit(); //removed unused capacity 
 
-		void clean();
+		void clear();
 		iterator insert(const_iterator pos, const value_type& value); // return the first element inserted
 		iterator insert(const_iterator pos, value_type&& value);
 		iterator insert(const_iterator pos, size_type count, const value_type& value);
@@ -251,7 +251,9 @@ namespace d_stl {
 	template<class T, class Allocator>
 	vector<T, Allocator>& vector<T, Allocator>::operator=(const vector& other) {
 		if (this != &other) {
-			assign_base(other.begin(), other.end(), typename std::is_integral<iterator>::type());
+			const_iterator tmp_first = other.begin();
+			const_iterator tmp_end = other.end();
+			vector_base(tmp_first, tmp_end, typename std::is_integral<const_iterator>::type());
 		}
 		return *this;
 	}
@@ -313,14 +315,15 @@ namespace d_stl {
 	}
 
 	template<class T, class Allocator>
-	void vector<T, Allocator>::clean() {
+	void vector<T, Allocator>::clear() {
 		destory(begin_, end_);
+		end_ = begin_;
 	}
 
 	//insert, push, pop
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(const_iterator pos, const value_type& value) {
-		insert_base(pos, 1, value, typename std::is_integral<size_type>::type());
+		return insert_base(pos, 1, value, typename std::is_integral<size_type>::type());
 		/*
 		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
 		if (end_ == stroage_) {
@@ -358,7 +361,9 @@ namespace d_stl {
 	//should not be treated as lvalue reference
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(const_iterator pos, value_type&& value) {
-		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
+		return insert_base(pos, 1, value_type(value), typename std::is_integral<size_type>::type());
+		/*
+		size_type dis = static_cast<size_type>(std::distance(cbegin(), pos));
 		if (end_ == stroage_) {
 			size_type new_size = size() == 0 ? 2 : size() * 2;
 			T* t_begin_ = allocate(new_size);
@@ -387,17 +392,18 @@ namespace d_stl {
 			end_++;
 			return iterator(begin_ + dis);
 		}
+		*/
 	}
 
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(const_iterator pos, size_type count, const value_type& value) {
-		insert_base(pos, count, value, typename std::is_integral<size_type>::type());	
+		return insert_base(pos, count, value, typename std::is_integral<size_type>::type());	
 	}
 
 	template<class T, class Allocator>
 	template<class InputIt>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(const_iterator pos, InputIt first, InputIt last) {
-		insert_base(pos, first, last, typename std::is_integral<InputIt>::type());
+		return insert_base(pos, first, last, typename std::is_integral<InputIt>::type());
 	}
 
 	template<class T, class Allocator>
@@ -608,7 +614,7 @@ namespace d_stl {
 	template<class T, class Allocator>
 	template<class InputIt>
 	void vector<T, Allocator>::assign_base(InputIt first, InputIt last, std::false_type) {
-		size_type count = static_cast<size_type>(distance(first, last));
+		size_type count = static_cast<size_type>(std::distance(first, last));
 		if (capacity() < count) {
 			reallocate_and_destory(count);
 		}
@@ -621,7 +627,7 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert_base(const_iterator pos, size_type count, const value_type& value, std::true_type) {
-		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
+		size_type dis = static_cast<size_type>(std::distance(cbegin(), pos));
 		if (end_ + count > stroage_) {
 			size_type new_size = size() > count ? 2 * size() : 2 * count;
 			T* t_begin_ = allocate(new_size);
@@ -658,8 +664,8 @@ namespace d_stl {
 	template<class T, class Allocator>
 	template<class InputIt>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert_base(const_iterator pos, InputIt first, InputIt last, std::false_type) {
-		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
-		size_type count = static_cast<size_type>(distance(first, last));
+		size_type dis = static_cast<size_type>(std::distance(cbegin(), pos));
+		size_type count = static_cast<size_type>(std::distance(first, last));
 		if (end_ + count > stroage_) {
 			size_type new_size = size() > count ? 2 * size() : 2 * count;
 			T* t_begin_ = allocate(new_size);
