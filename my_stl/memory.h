@@ -135,7 +135,7 @@ namespace d_stl {
 		}
 		catch (std::exception& e) {
 			for (; first != current; ++first) {
-				d_first->~Value();
+				first->~Value();
 			}
 			throw;
 		}
