@@ -89,7 +89,7 @@ namespace d_stl {
 
 	}
 
-	void test_case_vector_insert() {
+	void test_case_vector_modifiers() {
 		d_stl::vector<int> my_vector_1(5);
 		std::vector<int> s_vector_1(5);
 		my_vector_1.clear();
@@ -124,13 +124,67 @@ namespace d_stl {
 		s_vector_1.insert(s_pos4, s_lvalue1.begin(), s_lvalue1.end());
 		assert(equal_containter(my_vector_1, s_vector_1));
 
+		auto my_pos5 = my_vector_1.begin();
+		auto s_pos5 = s_vector_1.begin();
+		my_vector_1.erase(my_pos5);
+		s_vector_1.erase(s_pos5);
+		assert(equal_containter(my_vector_1, s_vector_1));
 
+		auto my_pos6 = my_vector_1.begin();
+		auto s_pos6 = s_vector_1.begin();
+		auto my_end_pos6 = my_pos6 + 2;
+		auto s_end_pos6 = s_pos6 + 2;
+		my_vector_1.erase(my_pos6, my_end_pos6);
+		s_vector_1.erase(s_pos6, s_end_pos6);
+		assert(equal_containter(my_vector_1, s_vector_1));
+
+		int lvalue7 = 1;
+		my_vector_1.push_back(lvalue7);
+		s_vector_1.push_back(lvalue7);
+		assert(equal_containter(my_vector_1, s_vector_1));
+
+		my_vector_1.push_back(2);
+		s_vector_1.push_back(2);
+		assert(equal_containter(my_vector_1, s_vector_1));
+
+		my_vector_1.pop_back();
+		s_vector_1.pop_back();
+		assert(equal_containter(my_vector_1, s_vector_1));
+
+		my_vector_1.resize(4);
+		s_vector_1.resize(4);
+		assert(equal_containter(my_vector_1, s_vector_1));
+
+		d_stl::vector<int> my_vector_2(5, 6);
+		std::vector<int> s_vector_2(5, 6);
+		my_vector_1.swap(my_vector_2);
+		s_vector_1.swap(s_vector_2);
+		assert(equal_containter(my_vector_1, s_vector_1));
+	}
+
+	void test_case_vector_compares() {
+		d_stl::vector<int> my_vector_1(5, 0);
+		d_stl::vector<int> my_vector_2(5, 0);
+		assert(operator==(my_vector_1, my_vector_2));
+
+		my_vector_1.push_back(1);
+		my_vector_2.push_back(2);
+		assert(operator!=(my_vector_1, my_vector_2));
+
+		assert(operator<=(my_vector_1, my_vector_2));
+
+		my_vector_1.clear();
+		my_vector_2.clear();
+		my_vector_1.push_back(1);
+		my_vector_2.push_back(2);
+		assert(operator<(my_vector_1, my_vector_2));
 	}
 
 	void test_vector() {
 		test_case_vector_constructor();
 		test_case_vector_size();
-		test_case_vector_insert();
+		test_case_vector_modifiers();
+		test_case_vector_compares();
 
 		//std::printf("%d/%d (%3.2%%) passed\n", test_vector_pass, test_vector_count, test_vector_pass*100.0 / test_vector_count);
 	}

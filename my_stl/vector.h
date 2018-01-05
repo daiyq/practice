@@ -14,8 +14,7 @@
 
 namespace d_stl {
 
-	std::iterator_traits<int> i;
-	
+
 	template<class T, class Allocator = d_stl::allocator<T>>
 	class vector {
 	private:
@@ -195,12 +194,12 @@ namespace d_stl {
 	//construction etc.
 	template<class T, class Allocator>
 	vector<T, Allocator>::vector() :begin_(nullptr), end_(nullptr), stroage_(nullptr) {
-		std::printf("blank\n");
+		//std::printf("blank\n");
 	}
 
 	template<class T, class Allocator>
 	vector<T, Allocator>::vector(size_type count) {
-		std::printf("only number\n");
+		//std::printf("only number\n");
 		ininitialized(count);
 		uninitialized_fill_n(begin_, count, T());
 	}
@@ -448,15 +447,18 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(const_iterator pos) {
-		erase(pos, pos + 1);
+		return erase(pos, pos + 1);
 	}
 
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(const_iterator first, const_iterator last) {
-		size_type count = static_cast<size_type>(distance(first, last));
-		copy(last, cend(), first);
+		size_type count = static_cast<size_type>(std::distance(first, last));
+		size_type dis = static_cast<size_type>(std::distance(cbegin(), first));
+		copy(last, cend(), begin_ + dis);
 		destory(end_ - count, end_);
-		return last;
+		end_ = end_ - count; //a bug that doesn't have this, so we need to update iterator
+		return (begin_ + dis);
+		
 	}
 
 	template<class T, class Allocator>
@@ -583,7 +585,7 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	void vector<T, Allocator>::vector_base(size_type count, const value_type& value, std::true_type) {
-		std::printf("number and value\n");
+		//std::printf("number and value\n");
 		ininitialized(count);
 		uninitialized_fill_n(begin_, count, value);
 	}
@@ -591,7 +593,7 @@ namespace d_stl {
 	template<class T, class Allocator>
 	template<class InputIt>
 	void vector<T, Allocator>::vector_base(InputIt first, InputIt last, std::false_type) {
-		std::printf("Iterator\n");
+		//std::printf("Iterator\n");
 		size_type count = static_cast<size_type>(std::distance(first, last));
 		//TODO:
 		//distance() 
@@ -719,9 +721,9 @@ namespace d_stl {
 
 	template<class T, class Allocator = d_stl::allocator<T>>
 	bool operator<=(const vector<T, Allocator>& lhs, const vector<T, Allocator>& rhs) {
-		std::size_t size = lhs.size() > rhs.size() ? lhs.size() : rhs.size();
+		std::size_t size = lhs.size() > rhs.size() ? rhs.size() : lhs.size();
 		for (std::size_t i = 0; i < size; i++) {
-			if (!((lhs[i] = rhs[i]) || (lhs[i] < rhs[i])))
+			if (!((lhs[i] == rhs[i]) || (lhs[i] < rhs[i])))
 				return false;
 		}
 		return true;
@@ -729,7 +731,7 @@ namespace d_stl {
 
 	template<class T, class Allocator = d_stl::allocator<T>>
 	bool operator<(const vector<T, Allocator>& lhs, const vector<T, Allocator>& rhs) {
-		std::size_t size = lhs.size() > rhs.size() ? lhs.size() : rhs.size();
+		std::size_t size = lhs.size() > rhs.size() ? rhs.size() : lhs.size();
 		for (std::size_t i = 0; i < size; i++) {
 			if (!(lhs[i] < rhs[i]))
 				return false;
