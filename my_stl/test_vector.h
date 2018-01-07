@@ -10,7 +10,7 @@
 
 namespace d_stl {
 
-	void test_case_vector_constructor() {
+	void test_case_vector_member() {
 		d_stl::vector<int> my_vector_1;
 		std::vector<int> s_vector_1;
 		assert(equal_containter(my_vector_1, s_vector_1));
@@ -181,7 +181,7 @@ namespace d_stl {
 	}
 
 	void test_vector() {
-		test_case_vector_constructor();
+		test_case_vector_member();
 		test_case_vector_size();
 		test_case_vector_modifiers();
 		test_case_vector_compares();

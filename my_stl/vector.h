@@ -36,6 +36,7 @@ namespace d_stl {
 		typedef d_stl::reverse_iterator<iterator> reverse_iterator;
 		typedef d_stl::reverse_iterator<const_iterator> const_reverse_iterator;
 
+		//Member functions
 		vector();
 		explicit vector(size_type count);
 		vector(size_type count, const value_type& value);
@@ -43,18 +44,18 @@ namespace d_stl {
 		vector(InputIt first, InputIt last);
 		vector(const vector& other);
 		vector(vector&& other);
-		vector(std::initializer_list<T> init);//not finished
+		vector(std::initializer_list<T> ilist);//not finished
 		~vector();
 
 
 		vector& operator=(const vector& other);
 		vector& operator=(vector&& other);
-		vector& operator=(std::initializer_list<T> init);//not finished
+		vector& operator=(std::initializer_list<T> ilist);//not finished
 
 		void assign(size_type count, const value_type& value);
 		template<class InputIt>
 		void assign(InputIt first, InputIt last);
-		void assign(std::initializer_list<T> init);//not finished
+		void assign(std::initializer_list<T> ilist);//not finished
 
 		//bound checking
 		reference at(size_type pos) {
@@ -95,6 +96,7 @@ namespace d_stl {
 			return begin_;
 		}
 
+		//Iterators
 		iterator begin() noexcept {
 			return begin_;
 		}
@@ -133,6 +135,7 @@ namespace d_stl {
 			return const_reverse_iterator(begin_);
 		}
 
+		//Capacity
 		bool empty() const noexcept {
 			return begin_ == end_;
 		}
@@ -146,13 +149,14 @@ namespace d_stl {
 		}
 		void shrink_to_fit(); //removed unused capacity 
 
+		//Modifiers
 		void clear();
 		iterator insert(const_iterator pos, const value_type& value); // return the first element inserted
 		iterator insert(const_iterator pos, value_type&& value);
 		iterator insert(const_iterator pos, size_type count, const value_type& value);
 		template<class InputIt>
 		iterator insert(const_iterator pos, InputIt first, InputIt last);
-		iterator insert(const_iterator pos, std::initializer_list<T> init);//not finished
+		iterator insert(const_iterator pos, std::initializer_list<T> ilist);//not finished
 		iterator erase(const_iterator pos); //return the following removed element
 		iterator erase(const_iterator first, const_iterator last);
 		void push_back(const value_type& value);
@@ -234,10 +238,8 @@ namespace d_stl {
 	}
 
 	template<class T, class Allocator>
-	vector<T, Allocator>::vector(std::initializer_list<T> init) {
-		//const_iterator tmp_first = init.begin();
-		//const_iterator tmp_end = init.end();
-		//vector_base(tmp_first, tmp_end, typename std::is_integral<const_iterator>::type());
+	vector<T, Allocator>::vector(std::initializer_list<T> ilist) {
+		
 	}
 
 	template<class T, class Allocator>
@@ -270,8 +272,8 @@ namespace d_stl {
 	}
 
 	template<class T, class Allocator>
-	vector<T, Allocator>& vector<T, Allocator>::operator=(std::initializer_list<T> init) {
-		//assign_base(init.begin(), init.end(), typename std::is_integral<iterator>::type());
+	vector<T, Allocator>& vector<T, Allocator>::operator=(std::initializer_list<T> ilist) {
+		
 		//return *this;
 	}
 
@@ -287,8 +289,8 @@ namespace d_stl {
 	}
 
 	template<class T, class Allocator>
-	void vector<T, Allocator>::assign(std::initializer_list<T> init) {
-		//assign_base(init.begin(), init.end(), typename std::is_integral<iterator>::type());
+	void vector<T, Allocator>::assign(std::initializer_list<T> ilist) {
+		
 	}
 
 	//functions about size
@@ -406,7 +408,7 @@ namespace d_stl {
 	}
 
 	template<class T, class Allocator>
-	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(const_iterator pos, std::initializer_list<T> init) {
+	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(const_iterator pos, std::initializer_list<T> ilist) {
 		//insert_base(pos, init.begin(), init.end(), typename std::is_integral<const_iterator>::type());
 		
 		/*
