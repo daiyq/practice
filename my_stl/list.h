@@ -70,18 +70,17 @@ namespace d_stl {
 
 
 	public:
-		typedef T value_type;
-		typedef std::size_t size_type;
-		typedef std::ptrdiff_t difference_type;
-		typedef value_type& reference;
-		typedef const value_type& const_reference;
-		typedef value_type* pointer;
-		typedef const value_type* const_pointer;
-		//iterator
-		typedef ListIterator<T> iterator;
-		typedef const ListIterator<T> const_iterator;
-		typedef d_stl::reverse_iterator<iterator> reverse_iterator;
-		typedef d_stl::reverse_iterator<const_iterator> const_reverse_iterator;
+		using value_type = T;
+		using size_type = std::size_t;
+		using difference_type = std::ptrdiff_t;
+		using reference = value_type&;
+		using const_reference = const value_type&;
+		using pointer = value_type*;
+		using const_pointer = const value_type*;
+		using iterator = ListIterator<T>;
+		using const_iterator = const ListIterator<T>;
+		using reverse_iterator = d_stl::reverse_iterator<iterator>;
+		using const_reverse_iterator = d_stl::reverse_iterator<const_iterator>;
 
 		//Member functions
 		list();
