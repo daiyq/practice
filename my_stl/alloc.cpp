@@ -133,9 +133,12 @@ namespace d_stl {
 		//12 bytes for deallocate, it should in 12/8=1, the first node,
 		//so it should deallocate into the fist node(8 bytes)
 		//of course, we may suppose n is multples of 8
-		if (n < 8)
-			std::free(p);
-		my_free_list = free_list + (n / 8 - 1); 
+		
+		//my_free_list = free_list + (n / 8 - 1);
+		//note:
+		//memory deallocated must be allocated from allocate()
+		//so, it must be multples of 8
+		my_free_list = free_list + free_list_index(n);
 		tmp->next = *my_free_list;
 		*my_free_list = tmp;
 	}

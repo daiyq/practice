@@ -17,12 +17,6 @@ namespace d_stl {
 
 	template<class T, class Allocator = d_stl::allocator<T>>
 	class vector {
-	private:
-		T* begin_;
-		T* end_;
-		T* stroage_;
-		typedef Allocator data_alloc;
-
 	public:
 		using value_type = T;
 		using size_type = std::size_t;
@@ -35,7 +29,14 @@ namespace d_stl {
 		using const_iterator = const value_type*;
 		using reverse_iterator = d_stl::reverse_iterator<iterator>;
 		using const_reverse_iterator = d_stl::reverse_iterator<const_iterator>;
+		using data_alloc = Allocator;
 
+	private:
+		T* begin_;
+		T* end_;
+		T* stroage_;
+	
+	public:
 		//Member functions
 		vector();
 		explicit vector(size_type count);
@@ -109,7 +110,7 @@ namespace d_stl {
 		iterator end() noexcept {
 			return end_;
 		}
-		iterator end() const noexcept {
+		const_iterator end() const noexcept {
 			return end_;
 		}
 		const_iterator cend() const noexcept {
@@ -252,6 +253,7 @@ namespace d_stl {
 	template<class T, class Allocator>
 	vector<T, Allocator>& vector<T, Allocator>::operator=(const vector& other) {
 		if (this != &other) {
+			delete_data_and_memory();
 			const_iterator tmp_first = other.begin();
 			const_iterator tmp_end = other.end();
 			vector_base(tmp_first, tmp_end, typename std::is_integral<const_iterator>::type());

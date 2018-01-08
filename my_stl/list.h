@@ -127,62 +127,70 @@ namespace d_stl {
 		void assign(std::initializer_list<T> ilist);
 
 		reference front() {
+			return current->next->data;
 		}
 
 		const_reference front() const {
+			return current->next->data;
 		}
 
 		reference back() {
+			return current->prev->data;
 		}
 
 		const_reference back() const {
+			return current->prev->data;
 		}
 
 		//Iterators
 		iterator begin() noexcept {
-			
+			return iterator(current->next);
 		}
 		const_iterator begin() const noexcept {
-			
+			return const_iterator(current->next);
 		}
 		const_iterator cbegin() const noexcept {
-			
+			return const_iterator(current->next);
 		}
 		iterator end() noexcept {
-			
+			return iterator(current);
 		}
-		iterator end() const noexcept {
-			
+		const_iterator end() const noexcept {
+			return const_iterator(current);
 		}
 		const_iterator cend() const noexcept {
-			
+			return const_iterator(current);
 		}
 
 		reverse_iterator rbegin() noexcept {
-			
+			return reverse_iterator(current);
 		}
 		const_reverse_iterator rbegin() const noexcept {
-			
+			return const_reverse_iterator(current);
 		}
 		const_reverse_iterator crbegin() const noexcept {
-			
+			return const_reverse_iterator(current);
 		}
 		reverse_iterator rend() noexcept {
-			
+			return iterator(current->next);
 		}
 		const_reverse_iterator rend() const noexcept {
-			
+			return const_reverse_iterator(current->next);
 		}
 		const_reverse_iterator crend() const noexcept {
-			
+			return const_reverse_iterator(current->next);
 		}
 
 		//Capacity
 		bool empty() const noexcept {
-			
+			return current->next == current;
 		}
 		size_type size() const noexcept {
-			
+			size_type i = 0;
+			while (current->next != current) {
+				i++;
+			}
+			return i;
 		}
 
 		//Modifiers
@@ -257,28 +265,36 @@ namespace d_stl {
 
 	template<class T,class Allocator>
 	list<T, Allocator>::list() {
+		list_base(0, value_type(), typename std::is_integral<size_type>::type());
 	}
 
 	template<class T, class Allocator>
 	list<T, Allocator>::list(size_type count) {
+		list_base(count, value_type(), typename std::is_integral<size_type>::type());
 	}
 
 	template<class T, class Allocator>
 	list<T, Allocator>::list(size_type count, const value_type& value) {
-	
+		list_base(count, value, typename std::is_integral<size_type>::type());
 	}
 
 	template<class T, class Allocator>
 	template<class InputIt>
 	list<T, Allocator>::list(InputIt first, InputIt last) {
+		list_base(first, last, typename std::is_integral<InputIt>::type());
 	}
 
 	template<class T, class Allocator>
 	list<T, Allocator>::list(const list& other) {
+		const_iterator tmp_first = other.begin();
+		const_iterator tmp_end = other.end();
+		list_base(tmp_first, tmp_end, typename std::is_integral<const_iterator>::type());
 	}
 
 	template<class T, class Allocator>
 	list<T, Allocator>::list(list&& other) {
+		current = other.current;
+		other.current = nullptr;
 	}
 
 	template<class T, class Allocator>
@@ -287,14 +303,28 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	list<T, Allocator>::~list() {
+		delete_data_and_memory();
 	}
 
 	template<class T, class Allocator>
 	list<T, Allocator>& list<T, Allocator>::operator=(const list& other) {
+		if (this != &other) {
+			delete_data_and_memory();
+			const_iterator tmp_first = other.begin();
+			const_iterator tmp_end = other.end();
+			list_base(tmp_first, tmp_end, typename std::is_integral<const_iterator>::type());
+		}
+		return *this;
 	}
 
 	template<class T, class Allocator>
 	list<T, Allocator>& list<T, Allocator>::operator=(list&& other) {
+		if (this != &other) {
+			delete_data_and_memory();
+			current = other.current;
+			other.current = nullptr;
+		}
+		return *this;
 	}
 
 	template<class T, class Allocator>
@@ -303,11 +333,13 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::assign(size_type count, const value_type& value) {
+		assign_base(count, value, typename std::is_integral<size_type>::type());
 	}
 
 	template<class T, class Allocator>
 	template<class InputIt>
 	void list<T, Allocator>::assign(InputIt first, InputIt last) {
+		assign_base(first, last, typename std::is_integral<InputIt>::type());
 	}
 
 	template<class T, class Allocator>
@@ -316,24 +348,29 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::clear() {
+		//remove context, not memory
 
 	}
 
 	template<class T, class Allocator>
 	typename list<T, Allocator>::iterator list<T, Allocator>::insert(const_iterator pos, const value_type& value) {
+		return insert_base(pos, 1, value, typename std::is_integral<size_type>::type());
 	}
 
 	template<class T, class Allocator>
 	typename list<T, Allocator>::iterator list<T, Allocator>::insert(const_iterator pos, value_type&& value) {
+		return insert_base(pos, 1, value_type(value), typename std::is_integral<size_type>::type());
 	}
 
 	template<class T, class Allocator>
 	typename list<T, Allocator>::iterator list<T, Allocator>::insert(const_iterator pos, size_type count, const value_type& value) {
+		return insert_base(pos, count, value, typename std::is_integral<size_type>::type());
 	}
 
 	template<class T, class Allocator>
 	template<class InputIt>
 	typename list<T, Allocator>::iterator list<T, Allocator>::insert(const_iterator pos, InputIt first, InputIt last) {
+		return insert_base(pos, first, last, typename std::is_integral<InputIt>::type());
 	}
 
 	template<class T, class Allocator>
@@ -342,6 +379,9 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	typename list<T, Allocator>::iterator list<T, Allocator>::erase(const_iterator pos) {
+		const_iterator post_pos = pos;
+		post_pos++;
+		erase(pos, post_pos);
 	}
 
 	template<class T, class Allocator>
@@ -536,6 +576,7 @@ namespace d_stl {
 	typename list<T, Allocator>::iterator list<T, Allocator>::insert_base(const_iterator pos, InputIt first, InputIt last, std::false_type) {
 		
 	}
+
 
 
 	template<class T, class Allocator = d_stl::allocator<T>>
