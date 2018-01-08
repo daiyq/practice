@@ -236,7 +236,7 @@ namespace d_stl {
 	private:
 		ptr_node allocate(size_type size = 1);
 		void deallocate(ptr_node p, size_type size = 1);
-		void destory(ptr_node p, ptr_node p_last = p + 1);
+		void destory(ptr_node p);
 		void initialize(size_type size = 1, value_type value = value_type());
 		void insert_initialize(size_type size);
 		void delete_data_and_memory();
@@ -470,8 +470,8 @@ namespace d_stl {
 	}
 
 	template<class T, class Allocator>
-	void list<T, Allocator>::destory(ptr_node p, ptr_node p_last = p + 1) {
-		data_alloc::destory(p, p_last);
+	void list<T, Allocator>::destory(ptr_node p) {
+		data_alloc::destory(p);
 	}
 
 	template<class T, class Allocator>
