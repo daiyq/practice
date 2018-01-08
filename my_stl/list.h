@@ -16,7 +16,7 @@ namespace d_stl {
 
 	template<class T>
 	class ListNode {
-	public:
+	private:
 		T* prev;
 		T* next;
 		T data;
@@ -37,8 +37,22 @@ namespace d_stl {
 		ptr_node current;
 
 	public:
+		ListIterator() :current(nullptr) {
+		}
+		ListIterator(const ptr_node& item) :current(item) {
+		}
+		ListIterator(const self& it) :current(it.current) {
+		}
+
+		bool operator==(const self& other) const {
+			return current == other.current;
+		}
+		bool operator!=(const self& other) const {
+			return current != other.current;
+		}
+
 		reference operator*() const {
-			
+			return (*current).data;
 		}
 		pointer operator->() const {
 			return &(operator*());
@@ -46,29 +60,29 @@ namespace d_stl {
 
 		//pre, return *this
 		self& operator++() {
-			
+			current = static_cast<ptr_node>(current->next);
 			return *this;
 		}
 		self& operator--() {
-			
+			current = static_cast<ptr_node>(current->prev);
 			return *this;
 		}
 		//post, return a copy
 		self operator++(int) {
-			
+			ptr_node tmp = current;
+			++*this;
+			return tmp;
 		}
 		self operator--(int) {
-			
+			ptr_node tmp = current;
+			--*this;
+			return tmp;
 		}
-
 
 	};
 
 	template<class T, class Allocator=d_stl::allocator<T>>
 	class list {
-	private:
-
-
 	public:
 		using value_type = T;
 		using size_type = std::size_t;
@@ -81,7 +95,13 @@ namespace d_stl {
 		using const_iterator = const ListIterator<T>;
 		using reverse_iterator = d_stl::reverse_iterator<iterator>;
 		using const_reverse_iterator = d_stl::reverse_iterator<const_iterator>;
+		using node = ListNode<T>;
+		using ptr_node = ListNode<T>*;
 
+	private:
+		ptr_node current;
+
+	public:
 		//Member functions
 		list();
 		explicit list(size_type count);
@@ -208,6 +228,13 @@ namespace d_stl {
 		void sort();
 		template<class Compare>
 		void sort(Compare comp);
+
+	private:
+		ptr_node allocate(size_type size = 1);
+		void deallocate(ptr_node p);
+
+		void construct(ptr_node p);
+		void destory(ptr_node p);
 
 	};
 
