@@ -17,8 +17,9 @@ namespace d_stl {
 	template<class T>
 	class ListNode {
 	private:
-		T* prev;
-		T* next;
+		using ptr_node = ListNode<T>*;
+		ptr_node prev;
+		ptr_node next;
 		T data;
 	};
 
@@ -60,11 +61,11 @@ namespace d_stl {
 
 		//pre, return *this
 		self& operator++() {
-			current = static_cast<ptr_node>(current->next);
+			current = current->next;
 			return *this;
 		}
 		self& operator--() {
-			current = static_cast<ptr_node>(current->prev);
+			current = current->prev;
 			return *this;
 		}
 		//post, return a copy
@@ -81,7 +82,9 @@ namespace d_stl {
 
 	};
 
-	template<class T, class Allocator=d_stl::allocator<T>>
+
+
+	template<class T, class Allocator=d_stl::allocator<ListNode<T>>>
 	class list {
 	public:
 		using value_type = T;
@@ -97,6 +100,7 @@ namespace d_stl {
 		using const_reverse_iterator = d_stl::reverse_iterator<const_iterator>;
 		using node = ListNode<T>;
 		using ptr_node = ListNode<T>*;
+		using data_alloc = Allocator;
 
 	private:
 		ptr_node current;
@@ -231,10 +235,23 @@ namespace d_stl {
 
 	private:
 		ptr_node allocate(size_type size = 1);
-		void deallocate(ptr_node p);
+		void deallocate(ptr_node p, size_type size = 1);
+		void destory(ptr_node p, ptr_node p_last = p + 1);
+		void initialize(size_type size = 1, value_type value = value_type());
+		void insert_initialize(size_type size);
+		void delete_data_and_memory();
+		
+		void list_base(size_type count, const value_type& value, std::true_type);
+		template<class InputIt>
+		void list_base(InputIt first, InputIt last, std::false_type);
 
-		void construct(ptr_node p);
-		void destory(ptr_node p);
+		void assign_base(size_type count, const value_type& value, std::true_type);
+		template<class InputIt>
+		void assign_base(InputIt first, InputIt last, std::false_type);
+
+		iterator insert_base(const_iterator pos, size_type count, const value_type& value, std::true_type);
+		template<class InputIt>
+		iterator insert_base(const_iterator pos, InputIt first, InputIt last, std::false_type);
 
 	};
 
@@ -441,8 +458,84 @@ namespace d_stl {
 	}
 
 
+	template<class T, class Allocator>
+	typename list<T, Allocator>::ptr_node list<T, Allocator>::allocate(size_type size = 1) {
+		ptr_node n = data_alloc::allocata(size);
+		return n;
+	}
 
+	template<class T, class Allocator>
+	void list<T, Allocator>::deallocate(ptr_node p, size_type size = 1) {
+		data_alloc::deallocate(p, size);
+	}
 
+	template<class T, class Allocator>
+	void list<T, Allocator>::destory(ptr_node p, ptr_node p_last = p + 1) {
+		data_alloc::destory(p, p_last);
+	}
+
+	template<class T, class Allocator>
+	void list<T, Allocator>::initialize(size_type size = 1, value_type value = value_type()) {
+		current = allocate(size);
+		node n;
+		n.data = value;
+		uninitialized_fill_n(current, size, n);
+
+		ptr_node tmp = current;
+		for (std::size_t i = 0; i < size - 1; i++) {
+			tmp->next = tmp + 1;
+			tmp->next->prev = tmp;
+			tmp++;
+		}
+		tmp->next = current;
+		current->prev = tmp;
+	}
+
+	template<class T, class Allocator>
+	void list<T, Allocator>::insert_initialize(size_type size) {
+		ptr_node insert_node = allocate(size);
+
+	}
+
+	template<class T, class Allocator>
+	void list<T, Allocator>::delete_data_and_memory() {
+
+	}
+
+	template<class T, class Allocator>
+	void list<T, Allocator>::list_base(size_type count, const value_type& value, std::true_type) {
+		//std::printf("number and value\n");
+		
+	}
+
+	template<class T, class Allocator>
+	template<class InputIt>
+	void list<T, Allocator>::list_base(InputIt first, InputIt last, std::false_type) {
+		//std::printf("Iterator\n");
+		
+	}
+
+	template<class T, class Allocator>
+	void list<T, Allocator>::assign_base(size_type count, const value_type& value, std::true_type) {
+		
+	}
+
+	template<class T, class Allocator>
+	template<class InputIt>
+	void list<T, Allocator>::assign_base(InputIt first, InputIt last, std::false_type) {
+		
+	}
+
+	template<class T, class Allocator>
+	typename list<T, Allocator>::iterator list<T, Allocator>::insert_base(const_iterator pos, size_type count, const value_type& value, std::true_type) {
+		
+	}
+
+	template<class T, class Allocator>
+	template<class InputIt>
+	typename list<T, Allocator>::iterator list<T, Allocator>::insert_base(const_iterator pos, InputIt first, InputIt last, std::false_type) {
+		
+	}
 
 
 	template<class T, class Allocator = d_stl::allocator<T>>
