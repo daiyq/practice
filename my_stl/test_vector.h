@@ -1,9 +1,10 @@
 #ifndef D_TEST_VECTOR_H_
 #define D_TEST_VECTOR_H_
 
-#include "test.h"
+#include "test_initi.h"
 #include "vector.h"
 #include <vector>
+#include <list>
 #include <cstdio> //printf
 #include <cassert>
 #include <utility> //std::move()
@@ -23,46 +24,74 @@ namespace d_stl {
 		std::vector<int> s_vector_3(5, 1);
 		assert(equal_containter(my_vector_3, s_vector_3));
 
-		std::vector<int> for_iterator(5, 2);
-		d_stl::vector<int> my_vector_4(for_iterator.begin(), for_iterator.end());
-		std::vector<int> s_vector_4(for_iterator.begin(), for_iterator.end());
+		std::vector<int> for_iterator4(5, 2);
+		d_stl::vector<int> my_vector_4(for_iterator4.begin(), for_iterator4.end());
+		std::vector<int> s_vector_4(for_iterator4.begin(), for_iterator4.end());
 		assert(equal_containter(my_vector_4, s_vector_4));
 
-		d_stl::vector<int> my_lvalue5(5, 3);
-		std::vector<int> s_lvalue5(5, 3);
-		d_stl::vector<int> my_vector_5(my_lvalue5);
-		std::vector<int> s_vector_5(s_lvalue5);
-		assert(equal_containter(my_vector_5, s_vector_5));
+		
+		std::list<int> for_iterator5(5, 2);
+		d_stl::vector<int> my_vector_5(for_iterator5.begin(), for_iterator5.end());
+		std::vector<int> s_vector_5(for_iterator5.begin(), for_iterator5.end());
+		assert(equal_containter(my_vector_4, s_vector_4));
+		
 
-		d_stl::vector<int> my_vector_6;
-		std::vector<int> s_vector_6;
-		my_vector_6 = my_lvalue5;
-		s_vector_6 = s_lvalue5;
+		d_stl::vector<int> my_lvalue6(5, 3);
+		std::vector<int> s_lvalue6(5, 3);
+		d_stl::vector<int> my_vector_6(my_lvalue6);
+		std::vector<int> s_vector_6(s_lvalue6);
 		assert(equal_containter(my_vector_6, s_vector_6));
 
-		d_stl::vector<int> my_vector_7;
-		std::vector<int> s_vector_7;
-		my_vector_7 = std::move(my_lvalue5);
-		s_vector_7 = std::move(s_lvalue5);
+		
+		d_stl::vector<int> my_rvalue7(5, 3);
+		std::vector<int> s_rvalue7(5, 3);
+		d_stl::vector<int> my_vector_7(std::move(my_rvalue7));
+		std::vector<int> s_vector_7(std::move(s_rvalue7));
 		assert(equal_containter(my_vector_7, s_vector_7));
+		
 
 		d_stl::vector<int> my_vector_8;
 		std::vector<int> s_vector_8;
-		my_vector_8.assign(5, 4);
-		s_vector_8.assign(5, 4);
+		my_vector_6 = my_lvalue6;
+		s_vector_6 = s_lvalue6;
 		assert(equal_containter(my_vector_8, s_vector_8));
 
 		d_stl::vector<int> my_vector_9;
 		std::vector<int> s_vector_9;
-		d_stl::vector<int> my_lvalue9(5, 3);
-		std::vector<int> s_lvalue9(5, 3);
-		my_vector_9.assign(my_lvalue9.begin(), my_lvalue9.end());
-		s_vector_9.assign(s_lvalue9.begin(), s_lvalue9.end());
+		my_vector_9 = std::move(my_lvalue6);
+		s_vector_9 = std::move(s_lvalue6);
 		assert(equal_containter(my_vector_9, s_vector_9));
+
+		d_stl::vector<int> my_vector_10;
+		std::vector<int> s_vector_10;
+		my_vector_10.assign(5, 4);
+		s_vector_10.assign(5, 4);
+		assert(equal_containter(my_vector_10, s_vector_10));
+
+		d_stl::vector<int> my_vector_11;
+		std::vector<int> s_vector_11;
+		d_stl::vector<int> my_lvalue11(5, 3);
+		std::vector<int> s_lvalue11(5, 3);
+		my_vector_11.assign(my_lvalue11.begin(), my_lvalue11.end());
+		s_vector_11.assign(s_lvalue11.begin(), s_lvalue11.end());
+		assert(equal_containter(my_vector_11, s_vector_11));
+
+		
+		d_stl::vector<int> my_vector_12;
+		std::vector<int> s_vector_12;
+		std::vector<int> s_lvalue12(5, 3);
+		my_vector_12.assign(s_lvalue12.begin(), s_lvalue12.end());
+		s_vector_12.assign(s_lvalue12.begin(), s_lvalue12.end());
+		assert(equal_containter(my_vector_12, s_vector_12));
+		
 
 	}
 
-	void test_case_vector_size() {
+	void test_case_vector_iterator() {
+
+	}
+
+	void test_case_vector_capacity() {
 		d_stl::vector<int> my_vector_1;
 		std::vector<int> s_vector_1;
 		assert(my_vector_1.empty());
@@ -182,7 +211,8 @@ namespace d_stl {
 
 	void test_vector() {
 		test_case_vector_member();
-		test_case_vector_size();
+		test_case_vector_iterator();
+		test_case_vector_capacity();
 		test_case_vector_modifiers();
 		test_case_vector_compares();
 
