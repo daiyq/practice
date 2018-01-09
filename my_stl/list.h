@@ -246,6 +246,7 @@ namespace d_stl {
 		void deallocate(ptr_node p, size_type size = 1);
 		void destory(ptr_node p);
 		void delete_data_and_memory();
+		void delete_context();//reserve header
 		
 		void list_base(size_type count, const value_type& value, std::true_type);
 		template<class InputIt>
@@ -346,8 +347,7 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::clear() {
-		//remove context, not memory
-
+		delete_context();
 	}
 
 	template<class T, class Allocator>
@@ -378,7 +378,7 @@ namespace d_stl {
 	template<class T, class Allocator>
 	typename list<T, Allocator>::iterator list<T, Allocator>::erase(const_iterator pos) {
 		const_iterator post_pos = pos;
-		post_pos++;
+		++post_pos;
 		erase(pos, post_pos);
 	}
 
@@ -388,38 +388,69 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::push_back(const value_type& value) {
+		const_iterator p = cend();
+		insert(p, value);
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::push_back(value_type&& value) {
+		const_iterator p = cend();
+		insert(p, value_type(value));
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::pop_back() {
+		const_iterator pos = cend();
+		--pos;
+		erase(pos);
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::push_front(const value_type& value) {
+		const_iterator p = cbegin();
+		insert(p, value);
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::push_front(value_type&& value) {
+		const_iterator p = cbegin();
+		insert(p, value_type(value));
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::pop_front() {
+		const_iterator pos = cbegin();
+		erase(pos);
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::resize(size_type count) {
+		resize(count, value_type());
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::resize(size_type count, const value_type& value) {
+		if (count > size()) {
+			const_iterator p = cend();
+			size_type add = count - size();
+			insert(p, add, value);
+		}
+		else if (count < size()) {
+			size_type add = size() - count;
+			while (add != 0) {
+				pop_back();
+				--add;
+			}
+		}
+		else
+			return;
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::swap(list& other) {
+		if (this != &other) {
+			std::swap(current, other.current);	
+		}
 	}
 
 	template<class T, class Allocator>
@@ -514,7 +545,21 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::delete_data_and_memory() {
+		delete_context();
+		destory(current);
+		deallocate(current);
+	}
 
+	template<class T, class Allocator>
+	void list<T, Allocator>::delete_context() {
+		ptr_node tmp = current->next;
+		while (current->next != current) {
+			current->next = tmp->next;
+			destory(tmp);
+			deallocate(tmp);
+
+			tmp = current->next;
+		}
 	}
 
 	template<class T, class Allocator>
@@ -625,8 +670,12 @@ namespace d_stl {
 	bool operator==(const list<T, Allocator>& lhs, const list<T, Allocator>& rhs) {
 		if (lhs.size() != rhs.size())
 			return false;
-		
-
+		auto l_iterator = lhs.cbegin();
+		auto r_iterator = rhs.cbegin();
+		for (; l_iterator != lhs.cend(); ++l_iterator, ++r_iterator) {
+			if (*l_iterator != *r_iterator)
+				return false;
+		}
 		return true;
 	}
 
@@ -638,14 +687,24 @@ namespace d_stl {
 	template<class T, class Allocator = d_stl::allocator<T>>
 	bool operator<=(const list<T, Allocator>& lhs, const list<T, Allocator>& rhs) {
 		std::size_t size = lhs.size() > rhs.size() ? rhs.size() : lhs.size();
-		
+		auto l_iterator = lhs.cbegin();
+		auto r_iterator = rhs.cbegin();
+		for (std::size_t i = 0; i < size; ++i, ++l_iterator, ++r_iterator) {
+			if (!((*l_iterator == *r_iterator) || (*l_iterator < *r_iterator)))
+				return false;
+		}
 		return true;
 	}
 
 	template<class T, class Allocator = d_stl::allocator<T>>
 	bool operator<(const list<T, Allocator>& lhs, const list<T, Allocator>& rhs) {
 		std::size_t size = lhs.size() > rhs.size() ? rhs.size() : lhs.size();
-		
+		auto l_iterator = lhs.cbegin();
+		auto r_iterator = rhs.cbegin();
+		for (std::size_t i = 0; i < size; ++i, ++l_iterator, ++r_iterator) {
+			if (!(*l_iterator < *r_iterator))
+				return false;
+		}
 		return true;
 	}
 
