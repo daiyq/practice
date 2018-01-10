@@ -586,7 +586,7 @@ namespace d_stl {
 		for (std::size_t i = 0; i < size - 1; i++) {
 			tmp->next = tmp + 1;
 			tmp->next->prev = tmp;
-			tmp++;
+			++tmp;
 		}
 		tmp->next = current;
 		current->prev = tmp;
@@ -598,9 +598,10 @@ namespace d_stl {
 		//std::printf("Iterator\n");
 		//size_type size = static_cast<size_type>(d_stl::distance(first, last)) + 1;
 		size_type size = 1;
-		while (first != last) {
-			++first;
-			++size;
+		auto it = first;
+		while (it != last) {
+			it++;
+			size += 1;
 		}
 		
 		current = allocate(size);
@@ -612,6 +613,7 @@ namespace d_stl {
 			tmp->next = tmp + 1;
 			tmp->next->prev = tmp;
 			tmp++;
+
 			tmp->data = *first;
 			first++;
 		}
@@ -644,7 +646,7 @@ namespace d_stl {
 		for (std::size_t i = 0; i < size - 1; i++) {
 			tmp->next = tmp + 1;
 			tmp->next->prev = tmp;
-			tmp++;
+			++tmp;
 		}
 
 		ptr_node p_pos = pos.current;
@@ -660,9 +662,10 @@ namespace d_stl {
 	typename list<T, Allocator>::iterator list<T, Allocator>::insert_base(const_iterator pos, InputIt first, InputIt last, std::false_type) {
 		//size_type size = static_cast<size_type>(d_stl::distance(first, last));
 		size_type size = 0;
-		while (first != last) {
-			++first;
-			++size;
+		auto it = first;
+		while (it != last) {
+			it++;
+			size += 1;
 		}
 
 		ptr_node insert_node = allocate(size);
@@ -672,11 +675,11 @@ namespace d_stl {
 		ptr_node tmp = insert_node;
 		for (std::size_t i = 0; i < size - 1; i++) {
 			tmp->data = *first;
-			first++;
+			++first;
 
 			tmp->next = tmp + 1;
 			tmp->next->prev = tmp;
-			tmp++;
+			++tmp;
 		}
 
 		ptr_node p_pos = pos.current;
