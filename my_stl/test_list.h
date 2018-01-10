@@ -12,7 +12,8 @@
 namespace d_stl {
 
 	void test_case_list_member() {
-		/*
+	
+		
 		d_stl::list<int> my_list_1;
 		std::list<int> s_list_1;
 		assert(equal_containter(my_list_1, s_list_1));
@@ -24,7 +25,20 @@ namespace d_stl {
 		d_stl::list<int> my_list_3(5, 1);
 		std::list<int> s_list_3(5, 1);
 		assert(equal_containter(my_list_3, s_list_3));
+		
+		
+		d_stl::list<int> my_rvalue7(5, 3);
+		std::list<int> s_rvalue7(5, 3);
+		d_stl::list<int> my_list_7(std::move(my_rvalue7));
+		std::list<int> s_list_7(std::move(s_rvalue7));
+		assert(equal_containter(my_list_7, s_list_7));
+		
 
+		
+
+						
+		/*
+		
 		std::list<int> for_iterator4(5, 2);
 		d_stl::list<int> my_list_4(for_iterator4.begin(), for_iterator4.end());
 		std::list<int> s_list_4(for_iterator4.begin(), for_iterator4.end());
@@ -41,30 +55,30 @@ namespace d_stl {
 		std::list<int> s_list_6(s_lvalue6);
 		assert(equal_containter(my_list_6, s_list_6));
 
-		d_stl::list<int> my_rvalue7(5, 3);
-		std::list<int> s_rvalue7(5, 3);
-		d_stl::list<int> my_list_7(std::move(my_rvalue7));
-		std::list<int> s_list_7(std::move(s_rvalue7));
-		assert(equal_containter(my_list_7, s_list_7));
-
+		
+				
+		d_stl::list<int> my_lvalue8(5, 3);
+		std::list<int> s_lvalue8(5, 3);
 		d_stl::list<int> my_vector_8;
 		std::list<int> s_vector_8;
-		my_vector_8 = my_lvalue6;
-		s_vector_8 = s_lvalue6;
+		my_vector_8 = my_lvalue8;
+		s_vector_8 = s_lvalue8;
 		assert(equal_containter(my_vector_8, s_vector_8));
 
-		d_stl::list<int> my_vector_9;
-		std::list<int> s_vector_9;
-		my_vector_9 = std::move(my_lvalue6);
-		s_vector_9 = std::move(s_lvalue6);
-		assert(equal_containter(my_vector_9, s_vector_9));
+		d_stl::list<int> my_rvalue9(5, 3);
+		std::list<int> s_rvalue9(5, 3);
+		d_stl::list<int> my_list_9;
+		std::list<int> s_list_9;
+		my_list_9 = std::move(my_rvalue9);
+		s_list_9 = std::move(s_rvalue9);
+		assert(equal_containter(my_list_9, s_list_9));
 
 		d_stl::list<int> my_vector_10;
 		std::list<int> s_vector_10;
 		my_vector_10.assign(5, 4);
 		s_vector_10.assign(5, 4);
 		assert(equal_containter(my_vector_10, s_vector_10));
-
+		
 		d_stl::list<int> my_list_11;
 		std::list<int> s_list_11;
 		d_stl::list<int> my_lvalue11(5, 3);
@@ -79,8 +93,8 @@ namespace d_stl {
 		my_list_12.assign(s_lvalue12.begin(), s_lvalue12.end());
 		s_list_12.assign(s_lvalue12.begin(), s_lvalue12.end());
 		assert(equal_containter(my_list_12, s_list_12));
-
 		*/
+	
 	}
 
 	void test_case_list_iterator() {

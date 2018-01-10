@@ -16,7 +16,7 @@ namespace d_stl {
 
 	template<class T>
 	class ListNode {
-	private:
+	public:
 		using ptr_node = ListNode<T>*;
 		ptr_node prev;
 		ptr_node next;
@@ -24,7 +24,7 @@ namespace d_stl {
 	};
 
 	template<class ListItem>
-	class ListIterator {
+	class ListIterator :public d_stl::bidirectional_iterator<ListItem, std::ptrdiff_t> {
 	public:
 		using iterator_category = bidirectional_iterator_tag;
 		using value_type = ListItem;
@@ -82,7 +82,15 @@ namespace d_stl {
 
 	};
 
+	template<class ListItem>
+	bool operator==(const ListIterator<ListItem>& lhs, const ListIterator<ListItem>& rhs) {
+		return (lhs.current == rhs.current);
+	}
 
+	template<class ListItem>
+	bool operator!=(const ListIterator<ListItem>& lhs, const ListIterator<ListItem>& rhs) {
+		return (lhs.current != rhs.current);
+	}
 
 	template<class T, class Allocator=d_stl::allocator<ListNode<T>>>
 	class list {
@@ -242,8 +250,8 @@ namespace d_stl {
 		void sort(Compare comp);
 
 	private:
-		ptr_node allocate(size_type size = 1);
-		void deallocate(ptr_node p, size_type size = 1);
+		ptr_node allocate(size_type size);
+		void deallocate(ptr_node p, size_type size);
 		void destory(ptr_node p);
 		void delete_data_and_memory();
 		void delete_context();//reserve header
@@ -528,13 +536,13 @@ namespace d_stl {
 
 
 	template<class T, class Allocator>
-	typename list<T, Allocator>::ptr_node list<T, Allocator>::allocate(size_type size = 1) {
-		ptr_node n = data_alloc::allocata(size);
+	typename list<T, Allocator>::ptr_node list<T, Allocator>::allocate(size_type size) {
+		ptr_node n = data_alloc::allocate(size);
 		return n;
 	}
 
 	template<class T, class Allocator>
-	void list<T, Allocator>::deallocate(ptr_node p, size_type size = 1) {
+	void list<T, Allocator>::deallocate(ptr_node p, size_type size) {
 		data_alloc::deallocate(p, size);
 	}
 
@@ -545,9 +553,12 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::delete_data_and_memory() {
+		if (current == nullptr) {
+			return;
+		}
 		delete_context();
 		destory(current);
-		deallocate(current);
+		deallocate(current, 1);
 	}
 
 	template<class T, class Allocator>
@@ -556,7 +567,7 @@ namespace d_stl {
 		while (current->next != current) {
 			current->next = tmp->next;
 			destory(tmp);
-			deallocate(tmp);
+			deallocate(tmp, 1);
 
 			tmp = current->next;
 		}
@@ -585,7 +596,13 @@ namespace d_stl {
 	template<class InputIt>
 	void list<T, Allocator>::list_base(InputIt first, InputIt last, std::false_type) {
 		//std::printf("Iterator\n");
-		size_type size = static_cast<size_type>(std::distance(first, last)) + 1;
+		//size_type size = static_cast<size_type>(d_stl::distance(first, last)) + 1;
+		size_type size = 1;
+		while (first != last) {
+			++first;
+			++size;
+		}
+		
 		current = allocate(size);
 		node n;
 		uninitialized_fill_n(current, size, n);
@@ -641,7 +658,13 @@ namespace d_stl {
 	template<class T, class Allocator>
 	template<class InputIt>
 	typename list<T, Allocator>::iterator list<T, Allocator>::insert_base(const_iterator pos, InputIt first, InputIt last, std::false_type) {
-		size_type size = static_cast<size_type>(std::distance(first, last));
+		//size_type size = static_cast<size_type>(d_stl::distance(first, last));
+		size_type size = 0;
+		while (first != last) {
+			++first;
+			++size;
+		}
+
 		ptr_node insert_node = allocate(size);
 		node n;
 		uninitialized_fill_n(insert_node, size, n);
