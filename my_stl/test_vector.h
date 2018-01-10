@@ -79,7 +79,7 @@ namespace d_stl {
 		
 		d_stl::vector<int> my_vector_12;
 		std::vector<int> s_vector_12;
-		std::vector<int> s_lvalue12(5, 3);
+		std::list<int> s_lvalue12(5, 3);
 		my_vector_12.assign(s_lvalue12.begin(), s_lvalue12.end());
 		s_vector_12.assign(s_lvalue12.begin(), s_lvalue12.end());
 		assert(equal_containter(my_vector_12, s_vector_12));
@@ -153,18 +153,27 @@ namespace d_stl {
 		s_vector_1.insert(s_pos4, s_lvalue1.begin(), s_lvalue1.end());
 		assert(equal_containter(my_vector_1, s_vector_1));
 
-		auto my_pos5 = my_vector_1.begin();
-		auto s_pos5 = s_vector_1.begin();
-		my_vector_1.erase(my_pos5);
-		s_vector_1.erase(s_pos5);
-		assert(equal_containter(my_vector_1, s_vector_1));
-
+		//不能连续插入。。。。
+		
 		auto my_pos6 = my_vector_1.begin();
 		auto s_pos6 = s_vector_1.begin();
-		auto my_end_pos6 = my_pos6 + 2;
-		auto s_end_pos6 = s_pos6 + 2;
-		my_vector_1.erase(my_pos6, my_end_pos6);
-		s_vector_1.erase(s_pos6, s_end_pos6);
+		my_vector_1.erase(my_pos6);
+		s_vector_1.erase(s_pos6);
+		assert(equal_containter(my_vector_1, s_vector_1));
+
+		auto my_pos5 = my_vector_1.begin();
+		auto s_pos5 = s_vector_1.begin();
+		std::list<int> s_lvalue2(5, 3);
+		my_vector_1.insert(my_pos5, s_lvalue2.begin(), s_lvalue2.end());
+		s_vector_1.insert(s_pos5, s_lvalue2.begin(), s_lvalue2.end());
+		assert(equal_containter(my_vector_1, s_vector_1));
+
+		auto my_pos7 = my_vector_1.begin();
+		auto s_pos7 = s_vector_1.begin();
+		auto my_end_pos7 = my_pos7 + 2;
+		auto s_end_pos7 = s_pos7 + 2;
+		my_vector_1.erase(my_pos7, my_end_pos7);
+		s_vector_1.erase(s_pos7, s_end_pos7);
 		assert(equal_containter(my_vector_1, s_vector_1));
 
 		int lvalue7 = 1;
@@ -189,6 +198,8 @@ namespace d_stl {
 		my_vector_1.swap(my_vector_2);
 		s_vector_1.swap(s_vector_2);
 		assert(equal_containter(my_vector_1, s_vector_1));
+
+		
 	}
 
 	void test_case_vector_compares() {
