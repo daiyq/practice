@@ -13,59 +13,7 @@ namespace d_stl {
 
 	void test_case_list_member() {
 	
-		d_stl::list<int> my_list_1;
-		printer_containter(my_list_1, my_list_1);
-		
-		d_stl::list<int> my_list_2(4);
-		printer_containter(my_list_2, my_list_2);
-		
-		d_stl::list<int> my_list_3(4, 3);
-		printer_containter(my_list_3, my_list_3);
-		
-		std::list<int> for_iterator4(4, 4);
-		d_stl::list<int> my_list_4(for_iterator4.begin(), for_iterator4.end());
-		printer_containter(my_list_4, my_list_4);
-		
-		std::vector<int> for_iterator5(4, 5);
-		d_stl::list<int> my_list_5(for_iterator5.begin(), for_iterator5.end());
-		printer_containter(my_list_5, my_list_5);
-		
-		d_stl::list<int> my_lvalue6(4, 6);
-		d_stl::list<int> my_list_6(my_lvalue6);
-		printer_containter(my_list_6, my_list_6);
-		
-		d_stl::list<int> my_rvalue7(4, 7);
-		d_stl::list<int> my_list_7(std::move(my_rvalue7));
-		printer_containter(my_list_7, my_list_7);
-		
-		d_stl::list<int> my_lvalue8(4, 8);
-		d_stl::list<int> my_list_8;
-		my_list_8 = my_lvalue8;
-		printer_containter(my_list_8, my_list_8);
-		
 
-		d_stl::list<int> my_rvalue9(4, 9);
-		d_stl::list<int> my_list_9;
-		my_list_9 = std::move(my_rvalue9);
-		printer_containter(my_list_9, my_list_9);
-		
-
-		d_stl::list<int> my_list_10;
-		my_list_10.assign(4, 10);
-		printer_containter(my_list_10, my_list_10);
-
-		d_stl::list<int> my_list_11;
-		d_stl::list<int> my_lvalue11(4, 11);
-		my_list_11.assign(my_lvalue11.begin(), my_lvalue11.end());
-		printer_containter(my_list_11, my_list_11);
-
-		d_stl::list<int> my_list_12;
-		d_stl::vector<int> s_lvalue12(4, 12);
-		my_list_12.assign(s_lvalue12.begin(), s_lvalue12.end());
-		printer_containter(my_list_12, my_list_12);
-		
-
-		/*
 		d_stl::list<int> my_list_1;
 		std::list<int> s_list_1;
 		printer_containter(my_list_1, s_list_1);
@@ -92,8 +40,7 @@ namespace d_stl {
 		std::list<int> s_list_5(for_iterator5.begin(), for_iterator5.end());
 		printer_containter(my_list_5, s_list_5);
 		assert(equal_containter(my_list_5, s_list_5));
-		*/
-	
+		
 		/*
 		d_stl::list<int> my_lvalue6(4, 6);
 		d_stl::list<int> my_list_6(my_lvalue6);
