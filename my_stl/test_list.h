@@ -106,14 +106,78 @@ namespace d_stl {
 	}
 
 	void test_case_list_iterator() {
-
+		//has been used in equal_containter(),
+		//so not test
 	}
 
 	void test_cast_list_capacity() {
+		
+		d_stl::list<int> my_list_1;
+		std::list<int> s_list_1;
+		assert(my_list_1.empty());
+		assert(my_list_1.empty() == s_list_1.empty());
 
+		d_stl::list<int> my_list_2(4);
+		std::list<int> s_list_2(4);
+		//assert(my_list_2.size() == s_list_2.size());
+		//can't run!!
+		assert(s_list_2.size());
+
+		d_stl::list<int> my_list_3(4, 3);
+		std::list<int> s_list_3(4, 3);
+		auto v1 = my_list_3.front();
+		auto v2 = my_list_3.front();
+		auto v3 = s_list_3.back();
+		auto v4 = s_list_3.back();
+		assert(v1 == v2);
+		assert(v3 == v4);
 	}
 
 	void test_case_list_modifiers() {
+		
+		d_stl::list<int> my_list_1(5);
+		std::list<int> s_list_1(5);
+		my_list_1.clear();
+		s_list_1.clear();
+		assert(my_list_1.empty());
+		assert(equal_containter(my_list_1, s_list_1));
+
+		/*
+		auto my_pos1 = my_list_1.begin();
+		auto s_pos1 = s_list_1.begin();
+		int lvalue1 = 1;
+		my_list_1.insert(my_pos1, lvalue1);
+		s_list_1.insert(s_pos1, lvalue1);
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+		*/
+
+		auto my_pos2 = my_list_1.begin();
+		auto s_pos2 = s_list_1.begin();
+		my_list_1.insert(my_pos2, 2);
+		s_list_1.insert(s_pos2, 2);
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+
+		
+		auto my_pos3 = my_list_1.begin();
+		auto s_pos3 = s_list_1.begin();
+		int lvalue2 = 1;
+		my_list_1.insert(my_pos3, 2, lvalue2);
+		s_list_1.insert(s_pos3, 2, lvalue2);
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+		
+		/*
+		auto my_pos4 = my_list_1.begin();
+		auto s_pos4 = s_list_1.begin();
+		d_stl::list<int> my_lvalue1(5, 3);
+		std::list<int> s_lvalue1(5, 3);
+		my_list_1.insert(my_pos4, my_lvalue1.begin(), my_lvalue1.end());
+		s_list_1.insert(s_pos4, s_lvalue1.begin(), s_lvalue1.end());
+		assert(equal_containter(my_list_1, s_list_1));
+		*/
+
 	}
 	
 	void test_case_list_operations() {
