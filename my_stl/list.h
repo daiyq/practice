@@ -892,6 +892,7 @@ namespace d_stl {
 		void assign(InputIt first, InputIt last);
 		void assign(std::initializer_list<T> ilist);
 
+		//UB
 		reference front() {
 			return current->next->data;
 		}
@@ -953,8 +954,10 @@ namespace d_stl {
 		}
 		size_type size() const noexcept {
 			size_type i = 0;
-			while (current->next != current) {
+			ptr_node pt = current->next;
+			while (pt != current) {
 				i++;
+				pt = pt->next;
 			}
 			return i;
 		}
@@ -1017,6 +1020,7 @@ namespace d_stl {
 		iterator insert_base(const_iterator pos, InputIt first, InputIt last, std::false_type);
 
 		iterator insert_node(const_iterator pos, const value_type& value);
+		iterator delete_node(iterator pos);
 		void delete_node(ptr_node p);
 	};
 
@@ -1074,7 +1078,6 @@ namespace d_stl {
 	template<class T>
 	list<T>& list<T>::operator=(const list& other) {
 		if (this != &other) {
-			
 			delete_context();
 			const_iterator pos = cbegin();
 			const_iterator first = other.begin();
@@ -1149,14 +1152,31 @@ namespace d_stl {
 
 	template<class T>
 	typename list<T>::iterator list<T>::erase(const_iterator pos) {
-		const_iterator post_pos = pos;
-		++post_pos;
-		erase(pos, post_pos);
+		if (pos == cend()) {
+			return pos;
+		}
+		return delete_node(pos);
 	}
 
 	template<class T>
 	typename list<T>::iterator list<T>::erase(const_iterator first, const_iterator last) {
+		if (first == last) {
+			return last;
+		}
 
+		ptr_node p_first = first.data();
+		ptr_node p_last = last.data();
+		ptr_node pre_p_first = p_first->prev;
+
+		ptr_node first_next;
+		while (p_first != p_last) {
+			first_next = p_first->next;
+			delete p_first;
+			p_first = first_next;
+		}
+		pre_p_first->next = p_first;
+		p_first->prev = pre_p_first;
+		return iterator(p_last);
 	}
 
 	template<class T>
@@ -1173,7 +1193,7 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::pop_back() {
-		const_iterator pos = cend();
+		iterator pos = end();
 		--pos;
 		erase(pos);
 	}
@@ -1335,7 +1355,6 @@ namespace d_stl {
 		return it;
 	}
 
-
 	template<class T>
 	template<class InputIt>
 	typename list<T>::iterator list<T>::insert_base(const_iterator pos, InputIt first, InputIt last, std::false_type) {
@@ -1364,6 +1383,17 @@ namespace d_stl {
 		p_pos->prev = insert_node;
 
 		return iterator(insert_node);
+	}
+
+	template<class T>
+	typename list<T>::iterator list<T>::delete_node(iterator pos) {
+		ptr_node p = pos.data();
+		ptr_node pre = p->prev;
+		ptr_node post = p->next;
+		delete p;
+		pre->next = post;
+		post->prev = pre;
+		return iterator(post);
 	}
 
 	template<class T>
