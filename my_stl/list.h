@@ -104,6 +104,10 @@ namespace d_stl {
 		return (lhs.current != rhs.current);
 	}
 
+//#define LIST_ALLOCATOR_
+
+#ifdef LIST_ALLOCATOR_
+
 	template<class T, class Allocator=d_stl::allocator<ListNode<T>>>
 	class list {
 	public:
@@ -842,6 +846,587 @@ namespace d_stl {
 	bool operator>(const list<T, Allocator>& lhs, const list<T, Allocator>& rhs) {
 		return (!operator<=(lhs, rhs));
 	}
+#endif // LIST_ALLOCATOR_
 
+
+#ifndef LIST_ALLOCATOR_
+
+	template<class T>
+	class list {
+	public:
+		using value_type = T;
+		using size_type = std::size_t;
+		using difference_type = std::ptrdiff_t;
+		using reference = value_type&;
+		using const_reference = const value_type&;
+		using pointer = value_type*;
+		using const_pointer = const value_type*;
+		using iterator = ListIterator<T>;
+		using const_iterator = const ListIterator<T>;
+		using reverse_iterator = d_stl::reverse_iterator<iterator>;
+		using const_reverse_iterator = d_stl::reverse_iterator<const_iterator>;
+		using node = ListNode<T>;
+		using ptr_node = ListNode<T>*;
+		
+	private:
+		ptr_node current;
+
+	public:
+		//Member functions
+		list();
+		explicit list(size_type count);
+		list(size_type count, const value_type& value);
+		template<class InputIt>
+		list(InputIt first, InputIt last);
+		list(const list& other);
+		list(list&& other);
+		list(std::initializer_list<T> ilist);
+		~list();
+
+		list& operator=(const list& other);
+		list& operator=(list&& other);
+		list& operator=(std::initializer_list<T> ilist);
+
+		void assign(size_type count, const value_type& value);
+		template<class InputIt>
+		void assign(InputIt first, InputIt last);
+		void assign(std::initializer_list<T> ilist);
+
+		reference front() {
+			return current->next->data;
+		}
+
+		const_reference front() const {
+			return current->next->data;
+		}
+
+		reference back() {
+			return current->prev->data;
+		}
+
+		const_reference back() const {
+			return current->prev->data;
+		}
+
+		//Iterators
+		iterator begin() noexcept {
+			return iterator(current->next);
+		}
+		const_iterator begin() const noexcept {
+			return const_iterator(current->next);
+		}
+		const_iterator cbegin() const noexcept {
+			return const_iterator(current->next);
+		}
+		iterator end() noexcept {
+			return iterator(current);
+		}
+		const_iterator end() const noexcept {
+			return const_iterator(current);
+		}
+		const_iterator cend() const noexcept {
+			return const_iterator(current);
+		}
+
+		reverse_iterator rbegin() noexcept {
+			return reverse_iterator(current);
+		}
+		const_reverse_iterator rbegin() const noexcept {
+			return const_reverse_iterator(current);
+		}
+		const_reverse_iterator crbegin() const noexcept {
+			return const_reverse_iterator(current);
+		}
+		reverse_iterator rend() noexcept {
+			return iterator(current->next);
+		}
+		const_reverse_iterator rend() const noexcept {
+			return const_reverse_iterator(current->next);
+		}
+		const_reverse_iterator crend() const noexcept {
+			return const_reverse_iterator(current->next);
+		}
+
+		//Capacity
+		bool empty() const noexcept {
+			return current->next == current;
+		}
+		size_type size() const noexcept {
+			size_type i = 0;
+			while (current->next != current) {
+				i++;
+			}
+			return i;
+		}
+
+		//Modifiers
+		void clear();
+		iterator insert(const_iterator pos, const value_type& value); // return the first element inserted
+		iterator insert(const_iterator pos, value_type&& value);
+		iterator insert(const_iterator pos, size_type count, const value_type& value);
+		template<class InputIt>
+		iterator insert(const_iterator pos, InputIt first, InputIt last);
+		iterator insert(const_iterator pos, std::initializer_list<T> ilist);//not finished
+		iterator erase(const_iterator pos); //return the following removed element
+		iterator erase(const_iterator first, const_iterator last);
+		void push_back(const value_type& value);
+		void push_back(value_type&& value);
+		void pop_back();
+		void push_front(const value_type& value);
+		void push_front(value_type&& value);
+		void pop_front();
+		void resize(size_type count);
+		void resize(size_type count, const value_type& value);
+		void swap(list& other);
+
+		//Operations
+		//from other to *this
+
+		//no copy, and other becomes empty
+		void merge(list& other);
+		void merge(list&& other);
+		template<class Compare>
+		void merge(list& other, Compare comp);
+		template<class Compare>
+		void merge(list&& other, Compare comp);
+		//no copy or move, but the internal pointers are re_pointed
+		void splice(const_iterator pos, list& other);
+		void splice(const_iterator pos, list&& other);
+		void splice(const_iterator pos, list& other, const_iterator it);
+		void splice(const_iterator pos, list&& other, const_iterator it);
+		void splice(const_iterator pos, list& other, const_iterator first, const_iterator last);
+		void splice(const_iterator pos, list&& other, const_iterator first, const_iterator last);
+		void remove(const value_type& value);
+		template<class UnaryPredicate>
+		void remove_if(UnaryPredicate p);
+		void reverse();
+		void unipue();
+		template<class BinaryPredicate>
+		void unique(BinaryPredicate p);
+		void sort();
+		template<class Compare>
+		void sort(Compare comp);
+
+	private:
+		void initialize();//initialize the header
+		void delete_data_and_memory();
+		void delete_context();//reserve header
+
+		iterator insert_base(const_iterator pos, size_type count, const value_type& value, std::true_type);
+		template<class InputIt>
+		iterator insert_base(const_iterator pos, InputIt first, InputIt last, std::false_type);
+
+		iterator insert_node(const_iterator pos, const value_type& value);
+		void delete_node(ptr_node p);
+	};
+
+	template<class T>
+	list<T>::list() {
+		initialize();
+	}
+
+	template<class T>
+	list<T>::list(size_type count) {
+		initialize();
+		const_iterator pos = cbegin();
+		insert_base(pos, count, value_type(), typename std::is_integral<size_type>::type());
+	}
+
+	template<class T>
+	list<T>::list(size_type count, const value_type& value) {
+		initialize();
+		const_iterator pos = cbegin();
+		insert_base(pos, count, value, typename std::is_integral<size_type>::type());
+	}
+
+	template<class T>
+	template<class InputIt>
+	list<T>::list(InputIt first, InputIt last) {
+		initialize();
+		const_iterator pos = cbegin();
+		insert_base(pos, first, last, typename std::is_integral<InputIt>::type());
+	}
+
+	template<class T>
+	list<T>::list(const list& other) {
+		initialize();
+		const_iterator pos = cbegin();
+		const_iterator first = other.begin();
+		const_iterator last = other.end();
+		insert_base(pos, first, last, typename std::is_integral<const_iterator>::type());
+	}
+
+	template<class T>
+	list<T>::list(list&& other) {
+		current = other.current;
+		other.current = nullptr;
+	}
+
+	template<class T>
+	list<T>::list(std::initializer_list<T> ilist) {
+	}
+
+	template<class T>
+	list<T>::~list() {
+		delete_data_and_memory();
+	}
+
+	template<class T>
+	list<T>& list<T>::operator=(const list& other) {
+		if (this != &other) {
+			
+			delete_context();
+			const_iterator pos = cbegin();
+			const_iterator first = other.begin();
+			const_iterator last = other.end();
+			insert_base(pos, first, last, typename std::is_integral<const_iterator>::type());
+		}
+		return *this;
+	}
+
+	template<class T>
+	list<T>& list<T>::operator=(list&& other) {
+		if (this != &other) {
+			delete_data_and_memory();
+			current = other.current;
+			other.current = nullptr;
+		}
+		return *this;
+	}
+
+	template<class T>
+	list<T>& list<T>::operator=(std::initializer_list<T> ilist) {
+	}
+
+	template<class T>
+	void list<T>::assign(size_type count, const value_type& value) {
+		delete_context();
+		const_iterator pos = cbegin();
+		insert_base(pos, count, value, typename std::is_integral<size_type>::type());
+	}
+
+	template<class T>
+	template<class InputIt>
+	void list<T>::assign(InputIt first, InputIt last) {
+		delete_context();
+		const_iterator pos = cbegin();
+		insert_base(pos, first, last, typename std::is_integral<InputIt>::type());
+	}
+
+	template<class T>
+	void list<T>::assign(std::initializer_list<T> ilist) {
+	}
+
+	template<class T>
+	void list<T>::clear() {
+		delete_context();
+	}
+
+	template<class T>
+	typename list<T>::iterator list<T>::insert(const_iterator pos, const value_type& value) {
+		return insert_node(pos, value);
+	}
+
+	template<class T>
+	typename list<T>::iterator list<T>::insert(const_iterator pos, value_type&& value) {
+		return insert_node(pos, value_type(value));
+	}
+
+	template<class T>
+	typename list<T>::iterator list<T>::insert(const_iterator pos, size_type count, const value_type& value) {
+		return insert_base(pos, count, value, typename std::is_integral<size_type>::type());
+	}
+
+	template<class T>
+	template<class InputIt>
+	typename list<T>::iterator list<T>::insert(const_iterator pos, InputIt first, InputIt last) {
+		return insert_base(pos, first, last, typename std::is_integral<InputIt>::type());
+	}
+
+	template<class T>
+	typename list<T>::iterator list<T>::insert(const_iterator pos, std::initializer_list<T> ilist) {
+	}
+
+	template<class T>
+	typename list<T>::iterator list<T>::erase(const_iterator pos) {
+		const_iterator post_pos = pos;
+		++post_pos;
+		erase(pos, post_pos);
+	}
+
+	template<class T>
+	typename list<T>::iterator list<T>::erase(const_iterator first, const_iterator last) {
+
+	}
+
+	template<class T>
+	void list<T>::push_back(const value_type& value) {
+		const_iterator p = cend();
+		insert(p, value);
+	}
+
+	template<class T>
+	void list<T>::push_back(value_type&& value) {
+		const_iterator p = cend();
+		insert(p, value_type(value));
+	}
+
+	template<class T>
+	void list<T>::pop_back() {
+		const_iterator pos = cend();
+		--pos;
+		erase(pos);
+	}
+
+	template<class T>
+	void list<T>::push_front(const value_type& value) {
+		const_iterator p = cbegin();
+		insert(p, value);
+	}
+
+	template<class T>
+	void list<T>::push_front(value_type&& value) {
+		const_iterator p = cbegin();
+		insert(p, value_type(value));
+	}
+
+	template<class T>
+	void list<T>::pop_front() {
+		const_iterator pos = cbegin();
+		erase(pos);
+	}
+
+	template<class T>
+	void list<T>::resize(size_type count) {
+		resize(count, value_type());
+	}
+
+	template<class T>
+	void list<T>::resize(size_type count, const value_type& value) {
+		if (count > size()) {
+			const_iterator p = cend();
+			size_type add = count - size();
+			insert(p, add, value);
+		}
+		else if (count < size()) {
+			size_type add = size() - count;
+			while (add != 0) {
+				pop_back();
+				--add;
+			}
+		}
+		else
+			return;
+	}
+
+	template<class T>
+	void list<T>::swap(list& other) {
+		if (this != &other) {
+			std::swap(current, other.current);
+		}
+	}
+
+	template<class T>
+	void list<T>::merge(list& other) {
+	}
+
+	template<class T>
+	void list<T>::merge(list&& other) {
+	}
+
+	template<class T>
+	template<class Compare>
+	void list<T>::merge(list& other, Compare comp) {
+	}
+
+	template<class T>
+	template<class Compare>
+	void list<T>::merge(list&& other, Compare comp) {
+	}
+
+	template<class T>
+	void list<T>::splice(const_iterator pos, list& other) {
+	}
+
+	template<class T>
+	void list<T>::splice(const_iterator pos, list&& other) {
+	}
+
+	template<class T>
+	void list<T>::splice(const_iterator pos, list& other, const_iterator it) {
+	}
+
+	template<class T>
+	void list<T>::splice(const_iterator pos, list&& other, const_iterator it) {
+	}
+
+	template<class T>
+	void list<T>::splice(const_iterator pos, list& other, const_iterator first, const_iterator last) {
+	}
+
+	template<class T>
+	void list<T>::splice(const_iterator pos, list&& other, const_iterator first, const_iterator last) {
+	}
+
+	template<class T>
+	void list<T>::remove(const value_type& value) {
+	}
+
+	template<class T>
+	template<class UnaryPredicate>
+	void list<T>::remove_if(UnaryPredicate p) {
+	}
+
+	template<class T>
+	void list<T>::reverse() {
+	}
+
+	template<class T>
+	void list<T>::unipue() {
+	}
+
+	template<class T>
+	template<class BinaryPredicate>
+	void list<T>::unique(BinaryPredicate p) {
+	}
+
+	template<class T>
+	void list<T>::sort() {
+	}
+
+	template<class T>
+	template<class Compare>
+	void list<T>::sort(Compare comp) {
+	}
+
+	template<class T>
+	void list<T>::initialize() {
+		current = new node;
+		current->prev = current;
+		current->next = current;
+	}
+
+	template<class T>
+	void list<T>::delete_data_and_memory() {
+		if (current == nullptr) {
+			return;
+		}
+		delete_context();
+		delete current;
+	}
+
+	template<class T>
+	void list<T>::delete_context() {	
+		ptr_node tmp = current->next;
+		while (current->next != current) {
+			delete_node(tmp);
+			tmp = current->next;
+		}
+	}
+
+	template<class T>
+	typename list<T>::iterator list<T>::insert_base(const_iterator pos, size_type count, const value_type& value, std::true_type) {
+		iterator it = pos;
+		while (count != 0) {
+			iterator it1 = insert_node(it, value);
+			it = it1;
+			count--;
+		}
+		return it;
+	}
+
+
+	template<class T>
+	template<class InputIt>
+	typename list<T>::iterator list<T>::insert_base(const_iterator pos, InputIt first, InputIt last, std::false_type) {
+		auto it = last;
+		iterator pos1 = pos;
+		iterator pos2;
+		while (it != first) {
+			it--;
+			pos2 = insert_node(pos1, value_type(*it));
+			pos1 = pos2;
+		}
+		return pos2;
+	}
+
+	template<class T>
+	typename list<T>::iterator list<T>::insert_node(const_iterator pos, const value_type& value) {
+		
+		ptr_node insert_node = new node;
+		insert_node->data = value;
+
+		ptr_node p_pos = pos.data();
+		ptr_node pre_p_pos = p_pos->prev;
+		pre_p_pos->next = insert_node;
+		insert_node->prev = pre_p_pos;
+		insert_node->next = p_pos;
+		p_pos->prev = insert_node;
+
+		return iterator(insert_node);
+	}
+
+	template<class T>
+	void list<T>::delete_node(ptr_node p) {
+		ptr_node pre = p->prev;
+		ptr_node post = p->next;
+		delete p;
+		pre->next = post;
+		post->prev = pre;
+	}
+
+	template<class T>
+	bool operator==(const list<T>& lhs, const list<T>& rhs) {
+		if (lhs.size() != rhs.size())
+			return false;
+		auto l_iterator = lhs.cbegin();
+		auto r_iterator = rhs.cbegin();
+		for (; l_iterator != lhs.cend(); ++l_iterator, ++r_iterator) {
+			if (*l_iterator != *r_iterator)
+				return false;
+		}
+		return true;
+	}
+
+	template<class T>
+	bool operator!=(const list<T>& lhs, const list<T>& rhs) {
+		return (!operator==(lhs, rhs));
+	}
+
+	template<class T>
+	bool operator<=(const list<T>& lhs, const list<T>& rhs) {
+		std::size_t size = lhs.size() > rhs.size() ? rhs.size() : lhs.size();
+		auto l_iterator = lhs.cbegin();
+		auto r_iterator = rhs.cbegin();
+		for (std::size_t i = 0; i < size; ++i, ++l_iterator, ++r_iterator) {
+			if (!((*l_iterator == *r_iterator) || (*l_iterator < *r_iterator)))
+				return false;
+		}
+		return true;
+	}
+
+	template<class T>
+	bool operator<(const list<T>& lhs, const list<T>& rhs) {
+		std::size_t size = lhs.size() > rhs.size() ? rhs.size() : lhs.size();
+		auto l_iterator = lhs.cbegin();
+		auto r_iterator = rhs.cbegin();
+		for (std::size_t i = 0; i < size; ++i, ++l_iterator, ++r_iterator) {
+			if (!(*l_iterator < *r_iterator))
+				return false;
+		}
+		return true;
+	}
+
+	template<class T>
+	bool operator>=(const list<T>& lhs, const list<T>& rhs) {
+		return (!operator<(lhs, rhs));
+	}
+
+	template<class T>
+	bool operator>(const list<T>& lhs, const list<T>& rhs) {
+		return (!operator<=(lhs, rhs));
+	}
+
+#endif // !LIST_ALLOCATOR_
 }
 #endif 
