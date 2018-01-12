@@ -18,12 +18,12 @@ namespace d_stl {
 		std::list<int> s_list_1;
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
-
+		
 		d_stl::list<int> my_list_2(4);
-		std::list<int> s_list_2(4);
+		std::list<int> s_list_2(4, 0);
 		printer_containter(my_list_2, s_list_2);
 		assert(equal_containter(my_list_2, s_list_2));
-
+		
 		d_stl::list<int> my_list_3(4, 3);
 		std::list<int> s_list_3(4, 3);
 		printer_containter(my_list_3, s_list_3);
@@ -41,6 +41,7 @@ namespace d_stl {
 		printer_containter(my_list_5, s_list_5);
 		assert(equal_containter(my_list_5, s_list_5));
 		
+		
 		/*
 		d_stl::list<int> my_lvalue6(4, 6);
 		d_stl::list<int> my_list_6(my_lvalue6);
@@ -55,7 +56,9 @@ namespace d_stl {
 		std::list<int> s_list_7(std::move(s_rvalue7));
 		printer_containter(my_list_7, s_list_7);
 		assert(equal_containter(my_list_7, s_list_7));
+		
 		*/
+		
 		
 		/*
 		d_stl::list<int> my_lvalue8(4, 8);
@@ -75,9 +78,7 @@ namespace d_stl {
 		s_list_9 = std::move(s_rvalue9);
 		printer_containter(my_list_9, s_list_9);
 		assert(equal_containter(my_list_9, s_list_9));
-		*/
-
-		/*
+		
 		d_stl::list<int> my_list_10;
 		std::list<int> s_list_10;
 		my_list_10.assign(4, 10);
@@ -142,7 +143,7 @@ namespace d_stl {
 		assert(my_list_1.empty());
 		assert(equal_containter(my_list_1, s_list_1));
 
-		/*
+		
 		auto my_pos1 = my_list_1.begin();
 		auto s_pos1 = s_list_1.begin();
 		int lvalue1 = 1;
@@ -150,7 +151,7 @@ namespace d_stl {
 		s_list_1.insert(s_pos1, lvalue1);
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
-		*/
+		
 
 		auto my_pos2 = my_list_1.begin();
 		auto s_pos2 = s_list_1.begin();
@@ -159,7 +160,6 @@ namespace d_stl {
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
 
-		
 		auto my_pos3 = my_list_1.begin();
 		auto s_pos3 = s_list_1.begin();
 		int lvalue2 = 1;
@@ -168,15 +168,15 @@ namespace d_stl {
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
 		
-		/*
 		auto my_pos4 = my_list_1.begin();
 		auto s_pos4 = s_list_1.begin();
 		d_stl::list<int> my_lvalue1(5, 3);
 		std::list<int> s_lvalue1(5, 3);
 		my_list_1.insert(my_pos4, my_lvalue1.begin(), my_lvalue1.end());
 		s_list_1.insert(s_pos4, s_lvalue1.begin(), s_lvalue1.end());
+		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
-		*/
+		
 
 	}
 	
