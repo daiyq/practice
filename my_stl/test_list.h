@@ -173,7 +173,6 @@ namespace d_stl {
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
 
-		
 		auto my_pos6 = my_list_1.begin();
 		auto s_pos6 = s_list_1.begin();
 		my_pos6++;
@@ -187,7 +186,6 @@ namespace d_stl {
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
 		
-
 		int lvalue8 = 8;
 		my_list_1.push_back(lvalue8);
 		s_list_1.push_back(lvalue8);
@@ -245,9 +243,39 @@ namespace d_stl {
 	}
 	
 	void test_case_list_operations() {
+
+
 	}
 
 	void test_case_list_compares() {
+		d_stl::list<int> my_list_1(5, 0);
+		d_stl::list<int> my_list_2(4, 0);
+		my_list_2.push_back(0);
+		assert((my_list_1 == my_list_2));
+
+		my_list_1.push_back(1);
+		my_list_2.push_back(0);
+		assert((my_list_1 != my_list_2));
+
+		assert((my_list_1 >= my_list_2));
+
+		d_stl::list<int> my_list_3(2, 0);
+		d_stl::list<int> my_list_4(2, 0);
+		my_list_3.push_back(0);
+		my_list_4.push_back(1);
+		assert((my_list_3 <= my_list_4));
+
+		d_stl::list<int> my_list_5;
+		d_stl::list<int> my_list_6;
+		my_list_5.push_back(0);
+		my_list_6.push_back(1);
+		assert((my_list_5 < my_list_6));
+
+		my_list_5.pop_back();
+		my_list_6.pop_back();
+		my_list_5.push_back(1);
+		my_list_6.push_back(0);
+		assert((my_list_5 > my_list_6));
 	}
 
 	void test_list() {

@@ -986,6 +986,7 @@ namespace d_stl {
 		//from other to *this
 
 		//no copy, and other becomes empty
+		//be sorted into ascending order
 		void merge(list& other);
 		void merge(list&& other);
 		template<class Compare>
@@ -1006,6 +1007,8 @@ namespace d_stl {
 		void unipue();
 		template<class BinaryPredicate>
 		void unique(BinaryPredicate p);
+		//stable sort
+		//merge sort???
 		void sort();
 		template<class Compare>
 		void sort(Compare comp);
