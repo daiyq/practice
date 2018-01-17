@@ -986,7 +986,7 @@ namespace d_stl {
 		//from other to *this
 
 		//no copy, and other becomes empty
-		//be sorted into ascending order
+		// has been sorted into ascending order
 		void merge(list& other);
 		void merge(list&& other);
 		template<class Compare>
@@ -1251,24 +1251,207 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::merge(list& other) {
+		if (this == &other) {
+			return;
+		}
+
+		const_iterator this_iter = cbegin();
+		const_iterator other_iter = other.cbegin();
+		while (!(this_iter == cend() && other_iter == other.cend())) {
+			if (other_iter == other.cend()) {
+				return;
+			}
+			else if (this_iter == cend()) {
+				//other_iter != other.cend()
+				ptr_node this_last_ptr = this_iter.data()->prev;
+				ptr_node other_ptr = other_iter.data();
+				ptr_node other_end_ptr = other.cend().data();
+				ptr_node other_last_ptr = other_end_ptr->prev;
+				//re_link
+				this_last_ptr->next = other_ptr;
+				other_ptr->prev = this_last_ptr;
+				other_last_ptr->next = current;
+				current->prev = other_last_ptr;
+				//make other empty
+				other_end_ptr->prev = other_end_ptr;
+				other_end_ptr->next = other_end_ptr;
+				return;
+			}
+			else if ((*this_iter < *other_iter) || (*this_iter == *other_iter)) {
+				this_iter++;
+			}
+			else if (*this_iter > *other_iter) {
+				ptr_node this_ptr = this_iter.data();
+				ptr_node other_ptr = other_iter.data();
+				other_iter++;
+				//other's link
+				other_ptr->prev->next = other_ptr->next;
+				other_ptr->next->prev = other_ptr->prev;
+				//"insert"
+				this_ptr->prev->next = other_ptr;
+				other_ptr->prev = this_ptr->prev;
+				other_ptr->next = this_ptr;
+				this_ptr->prev = other_ptr;	
+			}
+		}
+
 	}
 
 	template<class T>
 	void list<T>::merge(list&& other) {
+		if (this == &other) {
+			return;
+		}
+
+		const_iterator this_iter = cbegin();
+		const_iterator other_iter = other.cbegin();
+		while (!(this_iter == cend() && other_iter == other.cend())) {
+			if (other_iter == other.cend()) {
+				return;
+			}
+			else if (this_iter == cend()) {
+				//other_iter != other.cend()
+				ptr_node this_last_ptr = this_iter.data()->prev;
+				ptr_node other_ptr = other_iter.data();
+				ptr_node other_end_ptr = other.cend().data();
+				ptr_node other_last_ptr = other_end_ptr->prev;
+				//re_link
+				this_last_ptr->next = other_ptr;
+				other_ptr->prev = this_last_ptr;
+				other_last_ptr->next = current;
+				current->prev = other_last_ptr;
+				//make other empty
+				other_end_ptr->prev = other_end_ptr;
+				other_end_ptr->next = other_end_ptr;
+				return;
+			}
+			else if ((*this_iter < *other_iter) || (*this_iter == *other_iter)) {
+				this_iter++;
+			}
+			else if (*this_iter > *other_iter) {
+				ptr_node this_ptr = this_iter.data();
+				ptr_node other_ptr = other_iter.data();
+				other_iter++;
+				//other's link
+				other_ptr->prev->next = other_ptr->next;
+				other_ptr->next->prev = other_ptr->prev;
+				//"insert"
+				this_ptr->prev->next = other_ptr;
+				other_ptr->prev = this_ptr->prev;
+				other_ptr->next = this_ptr;
+				this_ptr->prev = other_ptr;
+			}
+		}
+
 	}
 
 	template<class T>
 	template<class Compare>
 	void list<T>::merge(list& other, Compare comp) {
+		if (this == &other) {
+			return;
+		}
+
+		const_iterator this_iter = cbegin();
+		const_iterator other_iter = other.cbegin();
+		while (!(this_iter == cend() && other_iter == other.cend())) {
+			if (other_iter == other.cend()) {
+				return;
+			}
+			else if (this_iter == cend()) {
+				//other_iter != other.cend()
+				ptr_node this_last_ptr = this_iter.data()->prev;
+				ptr_node other_ptr = other_iter.data();
+				ptr_node other_end_ptr = other.cend().data();
+				ptr_node other_last_ptr = other_end_ptr->prev;
+				//re_link
+				this_last_ptr->next = other_ptr;
+				other_ptr->prev = this_last_ptr;
+				other_last_ptr->next = current;
+				current->prev = other_last_ptr;
+				//make other empty
+				other_end_ptr->prev = other_end_ptr;
+				other_end_ptr->next = other_end_ptr;
+				return;
+			}
+			else if (!comp(*this_iter, *other_iter) && !comp(*other_iter, *this_iter)) {
+				this_iter++;//equivalent
+			}
+			else if (comp(*this_iter, *other_iter)) {
+				this_iter++;
+			}
+			else if (!comp(*this_iter, *other_iter)) {
+				ptr_node this_ptr = this_iter.data();
+				ptr_node other_ptr = other_iter.data();
+				other_iter++;
+				//other's link
+				other_ptr->prev->next = other_ptr->next;
+				other_ptr->next->prev = other_ptr->prev;
+				//"insert"
+				this_ptr->prev->next = other_ptr;
+				other_ptr->prev = this_ptr->prev;
+				other_ptr->next = this_ptr;
+				this_ptr->prev = other_ptr;
+			}
+		}
+
 	}
 
 	template<class T>
 	template<class Compare>
 	void list<T>::merge(list&& other, Compare comp) {
+		if (this == &other) {
+			return;
+		}
+
+		const_iterator this_iter = cbegin();
+		const_iterator other_iter = other.cbegin();
+		while (!(this_iter == cend() && other_iter == other.cend())) {
+			if (other_iter == other.cend()) {
+				return;
+			}
+			else if (this_iter == cend()) {
+				//other_iter != other.cend()
+				ptr_node this_last_ptr = this_iter.data()->prev;
+				ptr_node other_ptr = other_iter.data();
+				ptr_node other_end_ptr = other.cend().data();
+				ptr_node other_last_ptr = other_end_ptr->prev;
+				//re_link
+				this_last_ptr->next = other_ptr;
+				other_ptr->prev = this_last_ptr;
+				other_last_ptr->next = current;
+				current->prev = other_last_ptr;
+				//make other empty
+				other_end_ptr->prev = other_end_ptr;
+				other_end_ptr->next = other_end_ptr;
+				return;
+			}
+			else if (!comp(*this_iter, *other_iter) && !comp(*other_iter, *this_iter)) {
+				this_iter++;//equivalent
+			}
+			else if (comp(*this_iter, *other_iter)) {
+				this_iter++;
+			}
+			else if (!comp(*this_iter, *other_iter)) {
+				ptr_node this_ptr = this_iter.data();
+				ptr_node other_ptr = other_iter.data();
+				other_iter++;
+				//other's link
+				other_ptr->prev->next = other_ptr->next;
+				other_ptr->next->prev = other_ptr->prev;
+				//"insert"
+				this_ptr->prev->next = other_ptr;
+				other_ptr->prev = this_ptr->prev;
+				other_ptr->next = this_ptr;
+				this_ptr->prev = other_ptr;
+			}
+		}
+
 	}
 
 	template<class T>
 	void list<T>::splice(const_iterator pos, list& other) {
+
 	}
 
 	template<class T>
@@ -1407,6 +1590,7 @@ namespace d_stl {
 		pre->next = post;
 		post->prev = pre;
 	}
+
 
 	template<class T>
 	bool operator==(const list<T>& lhs, const list<T>& rhs) {
