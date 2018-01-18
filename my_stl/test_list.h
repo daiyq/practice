@@ -340,12 +340,12 @@ namespace d_stl {
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
 
-		/*
+		
 		my_list_1.unique();
 		s_list_1.unique();
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
-		*/
+		
 	}
 
 	void test_case_list_compares() {

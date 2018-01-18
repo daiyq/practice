@@ -1459,15 +1459,13 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::unique() {
-		iterator it = begin();
-		iterator it_next = ++it;
-		while (it_next != end()) {
-			if (*it == *it_next) {
-				it_next = erase(it_next);
+		ptr_node first = current->next;
+		while (first->next != current) {
+			if (first->data == first->next->data) {
+				delete_node(first->next);
 			}
 			else {
-				it = it_next;
-				it_next = ++it;
+				first = first->next;
 			}
 		}
 	}
@@ -1475,17 +1473,7 @@ namespace d_stl {
 	template<class T>
 	template<class BinaryPredicate>
 	void list<T>::unique(BinaryPredicate p) {
-		iterator it = begin();
-		iterator it_next = ++it;
-		while (it_next != end()) {
-			if (p(*it, *it_next)) {
-				it_next = erase(it_next);
-			}
-			else {
-				it = it_next;
-				it_next = ++it;
-			}
-		}
+		
 	}
 
 	template<class T>
