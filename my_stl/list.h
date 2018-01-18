@@ -1004,6 +1004,7 @@ namespace d_stl {
 		template<class UnaryPredicate>
 		void remove_if(UnaryPredicate p);
 		void reverse();
+		//just for consecutive duplicate elements
 		void unipue();
 		template<class BinaryPredicate>
 		void unique(BinaryPredicate p);
@@ -1025,6 +1026,14 @@ namespace d_stl {
 		iterator insert_node(const_iterator pos, const value_type& value);
 		iterator delete_node(iterator pos);
 		void delete_node(ptr_node p);
+
+		ptr_node merge_sort(ptr_node first);
+		template<class Compare>
+		ptr_node merge_sort(ptr_node first1, Compare comp);
+		ptr_node merge_base(ptr_node first1, ptr_node first2);
+		template<class Compare>
+		ptr_node merge_base(ptr_node first1, ptr_node first2, Compare comp);
+		
 	};
 
 	template<class T>
@@ -1299,50 +1308,7 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::merge(list&& other) {
-		if (this == &other) {
-			return;
-		}
-
-		const_iterator this_iter = cbegin();
-		const_iterator other_iter = other.cbegin();
-		while (!(this_iter == cend() && other_iter == other.cend())) {
-			if (other_iter == other.cend()) {
-				return;
-			}
-			else if (this_iter == cend()) {
-				//other_iter != other.cend()
-				ptr_node this_last_ptr = this_iter.data()->prev;
-				ptr_node other_ptr = other_iter.data();
-				ptr_node other_end_ptr = other.cend().data();
-				ptr_node other_last_ptr = other_end_ptr->prev;
-				//re_link
-				this_last_ptr->next = other_ptr;
-				other_ptr->prev = this_last_ptr;
-				other_last_ptr->next = current;
-				current->prev = other_last_ptr;
-				//make other empty
-				other_end_ptr->prev = other_end_ptr;
-				other_end_ptr->next = other_end_ptr;
-				return;
-			}
-			else if ((*this_iter < *other_iter) || (*this_iter == *other_iter)) {
-				this_iter++;
-			}
-			else if (*this_iter > *other_iter) {
-				ptr_node this_ptr = this_iter.data();
-				ptr_node other_ptr = other_iter.data();
-				other_iter++;
-				//other's link
-				other_ptr->prev->next = other_ptr->next;
-				other_ptr->next->prev = other_ptr->prev;
-				//"insert"
-				this_ptr->prev->next = other_ptr;
-				other_ptr->prev = this_ptr->prev;
-				other_ptr->next = this_ptr;
-				this_ptr->prev = other_ptr;
-			}
-		}
-
+		
 	}
 
 	template<class T>
@@ -1400,66 +1366,43 @@ namespace d_stl {
 	template<class T>
 	template<class Compare>
 	void list<T>::merge(list&& other, Compare comp) {
-		if (this == &other) {
-			return;
-		}
-
-		const_iterator this_iter = cbegin();
-		const_iterator other_iter = other.cbegin();
-		while (!(this_iter == cend() && other_iter == other.cend())) {
-			if (other_iter == other.cend()) {
-				return;
-			}
-			else if (this_iter == cend()) {
-				//other_iter != other.cend()
-				ptr_node this_last_ptr = this_iter.data()->prev;
-				ptr_node other_ptr = other_iter.data();
-				ptr_node other_end_ptr = other.cend().data();
-				ptr_node other_last_ptr = other_end_ptr->prev;
-				//re_link
-				this_last_ptr->next = other_ptr;
-				other_ptr->prev = this_last_ptr;
-				other_last_ptr->next = current;
-				current->prev = other_last_ptr;
-				//make other empty
-				other_end_ptr->prev = other_end_ptr;
-				other_end_ptr->next = other_end_ptr;
-				return;
-			}
-			else if (!comp(*this_iter, *other_iter) && !comp(*other_iter, *this_iter)) {
-				this_iter++;//equivalent
-			}
-			else if (comp(*this_iter, *other_iter)) {
-				this_iter++;
-			}
-			else if (!comp(*this_iter, *other_iter)) {
-				ptr_node this_ptr = this_iter.data();
-				ptr_node other_ptr = other_iter.data();
-				other_iter++;
-				//other's link
-				other_ptr->prev->next = other_ptr->next;
-				other_ptr->next->prev = other_ptr->prev;
-				//"insert"
-				this_ptr->prev->next = other_ptr;
-				other_ptr->prev = this_ptr->prev;
-				other_ptr->next = this_ptr;
-				this_ptr->prev = other_ptr;
-			}
-		}
-
+		
 	}
 
 	template<class T>
 	void list<T>::splice(const_iterator pos, list& other) {
-
+		if (other.empty()) {
+			return;
+		}
+		ptr_node pos_ptr = pos.data();
+		ptr_node first_ptr = other.begin().data();
+		ptr_node last_ptr = other.end().data();
+		pos_ptr->prev->next = first_ptr;
+		first_ptr->prev = pos_ptr->prev;
+		last_ptr->prev->next = pos_ptr;
+		pos_ptr->prev = last_ptr->prev;
+		//make other empty
+		last_ptr->prev = last_ptr;
+		last_ptr->next = last_ptr;
 	}
 
 	template<class T>
 	void list<T>::splice(const_iterator pos, list&& other) {
+		
 	}
 
 	template<class T>
 	void list<T>::splice(const_iterator pos, list& other, const_iterator it) {
+		ptr_node pos_ptr = pos.data();
+		ptr_node it_ptr = it.data();
+		//re_link in other
+		it_ptr->prev->next = it_ptr->next;
+		it_ptr->next->prev = it_ptr->prev;
+		//"insert"
+		pos_ptr->prev->next = it_ptr;
+		it_ptr->prev = pos_ptr->prev;
+		it_ptr->next = pos_ptr;
+		pos_ptr->prev = it_ptr;
 	}
 
 	template<class T>
@@ -1468,6 +1411,19 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::splice(const_iterator pos, list& other, const_iterator first, const_iterator last) {
+		ptr_node pos_ptr = pos.data();
+		ptr_node first_ptr = first.data();
+		ptr_node last_ptr = last.data();
+		ptr_node pre_last_ptr = last_ptr->prev;
+		//re_link in other
+		first_ptr->prev->next = last_ptr;
+		last_ptr->prev = first_ptr->prev;
+		//"insert"
+		pos_ptr->prev->next = first_ptr;
+		first_ptr->prev = pos_ptr->prev;
+		pre_last_ptr->next = pos_ptr;
+		pos_ptr->prev = pre_last_ptr;
+		
 	}
 
 	template<class T>
@@ -1476,33 +1432,106 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::remove(const value_type& value) {
+		auto it = begin();
+		while (it != end()) {
+			if (*it == value) {
+				it = erase(it);
+			}
+			else {
+				it++;
+			}
+		}
 	}
 
 	template<class T>
 	template<class UnaryPredicate>
 	void list<T>::remove_if(UnaryPredicate p) {
+		auto it = begin();
+		while (it != end()) {
+			if (p(*it)) {
+				it = erase(it);
+			}
+			else {
+				it++;
+			}
+		}
 	}
 
 	template<class T>
 	void list<T>::reverse() {
+		ptr_node ptr = current;
+		ptr_node ptr_next = ptr->next;
+		while (ptr_next != current) {
+			ptr_next = ptr->next;
+			auto tmp = ptr->prev;
+			ptr->prev = ptr->next;
+			ptr->next = tmp;
+			ptr = ptr_next;
+		}
 	}
 
 	template<class T>
 	void list<T>::unipue() {
+		iterator it = begin();
+		iterator it_next = ++it;
+		while (it_next != end()) {
+			if (*it == *it_next) {
+				it_next = erase(it_next);
+			}
+			else {
+				it = it_next;
+				it_next = ++it;
+			}
+		}
 	}
 
 	template<class T>
 	template<class BinaryPredicate>
 	void list<T>::unique(BinaryPredicate p) {
+		iterator it = begin();
+		iterator it_next = ++it;
+		while (it_next != end()) {
+			if (p(*it, *it_next)) {
+				it_next = erase(it_next);
+			}
+			else {
+				it = it_next;
+				it_next = ++it;
+			}
+		}
 	}
 
 	template<class T>
 	void list<T>::sort() {
+		if (empty()) {
+			return;
+		}
+		ptr_node first = current->next;
+		current->prev->next = nullptr;
+		first = merge_sort(first);
+		ptr_node last = first;
+		while (last->next != nullptr) {
+			last = last->next;
+		}
+		current->next = first;
+		current->prev = last;
 	}
 
 	template<class T>
 	template<class Compare>
 	void list<T>::sort(Compare comp) {
+		if (empty()) {
+			return;
+		}
+		ptr_node first = current->next;
+		current->prev->next = nullptr;
+		first = merge_sort(first, comp);
+		ptr_node last = first;
+		while (last->next != nullptr) {
+			last = last->next;
+		}
+		current->next = first;
+		current->prev = last;
 	}
 
 	template<class T>
@@ -1591,6 +1620,132 @@ namespace d_stl {
 		post->prev = pre;
 	}
 
+	template<class T>
+	typename list<T>::ptr_node list<T>::merge_sort(ptr_node first) {
+		if (first->next == nullptr) {
+			return first;
+		}
+
+		ptr_node slow = first;
+		ptr_node fast = first;
+		//find the middle
+		while (fast != nullptr&&fast->next != nullptr) {
+			slow = slow->next;
+			fast = fast->next->next;
+		}
+		//get two child lists
+		slow->prev->next = nullptr;
+		ptr_node first_ptr = merge_sort(first);
+		ptr_node second_ptr = merge_sort(slow);
+		return merge_base(first_ptr, second_ptr);
+	}
+
+	template<class T>
+	template<class Compare>
+	typename list<T>::ptr_node list<T>::merge_sort(ptr_node first1, Compare comp) {
+		if (first->next == nullptr) {
+			return first;
+		}
+
+		ptr_node slow = first;
+		ptr_node fast = first;
+		//find the middle
+		while (fast != nullptr&&fast->next != nullptr) {
+			slow = slow->next;
+			fast = fast->next->next;
+		}
+		//get two child lists
+		slow->prev->next = nullptr;
+		ptr_node first_ptr = merge_sort(first);
+		ptr_node second_ptr = merge_sort(slow);
+		return merge_base(first_ptr, second_ptr, comp);
+	}
+
+	template<class T>
+	typename list<T>::ptr_node list<T>::merge_base(ptr_node first1, ptr_node first2) {
+		//end with nullptr, 
+		ptr_node return_ptr;
+		ptr_node tmp;
+		//find the less value  
+		if (first2->data < first1->data) {
+			merge_base(first2, first1);
+		}
+		else {
+			return_ptr = first1;
+			tmp = first1;
+			first1 = first1->next;
+		}
+		
+		//bidirectional
+		while (first1 != nullptr && first2 != nullptr) {
+			if (first2->data < first1->data) {
+				tmp->next = first2;
+				first2->prev = tmp;
+				tmp = tmp->next;
+				first2 = first2->next;
+			}
+			else {
+				tmp->next = first1;
+				first1->prev = tmp;
+				tmp = tmp->next;
+				first1 = first1->next;
+			}
+		}
+		if (first1 != nullptr) {
+			tmp->next = first1;
+			first1->prev = tmp;
+		}
+		if (first2 != nullptr) {
+			tmp->next = first2;
+			first2->prev = tmp;
+		}
+
+		return return_ptr;
+	}
+
+	template<class T>
+	template<class Compare>
+	typename list<T>::ptr_node list<T>::merge_base(ptr_node first1, ptr_node first2, Compare comp) {
+		//end with nullptr, 
+		ptr_node return_ptr;
+		ptr_node tmp;
+		//find the less value  
+		if (first2->data < first1->data) {
+			merge_base(first2, first1);
+		}
+		else {
+			return_ptr = first1;
+			tmp = first1;
+			first1 = first1->next;
+		}
+
+		//bidirectional
+		while (first1 != nullptr && first2 != nullptr) {
+			if (comp(first2->data, first1->data)) {
+				tmp->next = first2;
+				first2->prev = tmp;
+				tmp = tmp->next;
+				first2 = first2->next;
+			}
+			else {
+				tmp->next = first1;
+				first1->prev = tmp;
+				tmp = tmp->next;
+				first1 = first1->next;
+			}
+		}
+		if (first1 != nullptr) {
+			tmp->next = first1;
+			first1->prev = tmp;
+		}
+		if (first2 != nullptr) {
+			tmp->next = first2;
+			first2->prev = tmp;
+		}
+
+		return return_ptr;
+
+	}
 
 	template<class T>
 	bool operator==(const list<T>& lhs, const list<T>& rhs) {
