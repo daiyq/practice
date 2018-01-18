@@ -243,8 +243,109 @@ namespace d_stl {
 	}
 	
 	void test_case_list_operations() {
+		d_stl::list<int> my_list_1;
+		std::list<int> s_list_1;
+		int i = 9;
+		while (i >= 0) {
+			my_list_1.push_back(i);
+			s_list_1.push_back(i);
+			i--;
+		}
+		//printer_containter(my_list_1, s_list_1);
+		//assert(equal_containter(my_list_1, s_list_1));
 
+		my_list_1.sort();
+		s_list_1.sort();
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
 
+		/*
+		auto f = [](const int& lhs, const int& rhs) {
+			if (lhs > rhs)
+				return true;
+			return false;
+		};
+		my_list_1.sort(f);
+		s_list_1.sort(f);
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+		*/
+		d_stl::list<int> my_list_2;
+		std::list<int> s_list_2;
+		int j = 12;
+		while (j >= 6) {
+			my_list_2.push_back(j);
+			s_list_2.push_back(j);
+			j--;
+		}
+		my_list_2.sort();
+		s_list_2.sort();
+		printer_containter(my_list_2, s_list_2);
+		my_list_1.merge(my_list_2);
+		s_list_1.merge(s_list_2);
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+
+		j = 20;
+		while (j >= 15) {
+			my_list_2.push_back(j);
+			s_list_2.push_back(j);
+			j--;
+		}
+		//printer_containter(my_list_2, s_list_2);
+		auto my_it = my_list_1.cbegin();
+		auto s_it = s_list_1.cbegin();
+		my_list_1.splice(my_it, my_list_2);
+		s_list_1.splice(s_it, s_list_2);
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+
+		my_it = my_list_1.cbegin();
+		s_it = s_list_1.cbegin();
+		j = 30;
+		while (j >= 26) {
+			my_list_2.push_back(j);
+			s_list_2.push_back(j);
+			j--;
+		}
+		auto my_it_2 = my_list_2.cbegin();
+		auto s_it_2 = s_list_2.cbegin();
+		my_it_2++;
+		my_it_2++;
+		s_it_2++;
+		s_it_2++;
+		my_list_1.splice(my_it, my_list_2, my_it_2);
+		s_list_1.splice(s_it, s_list_2, s_it_2);
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+		
+		my_it = my_list_1.cbegin();
+		s_it = s_list_1.cbegin();
+		auto my_it_2_begin = my_list_2.cbegin();
+		auto s_it_2_begin = s_list_2.cbegin();
+		auto my_it_2_end = my_list_2.cend();
+		auto s_it_2_end = s_list_2.cend();
+		my_list_1.splice(my_it, my_list_2, my_it_2_begin, my_it_2_end);
+		s_list_1.splice(s_it, s_list_2, s_it_2_begin, s_it_2_end);
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+
+		my_list_1.remove(8);
+		s_list_1.remove(8);
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+
+		my_list_1.reverse();
+		s_list_1.reverse();
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+
+		/*
+		my_list_1.unique();
+		s_list_1.unique();
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+		*/
 	}
 
 	void test_case_list_compares() {

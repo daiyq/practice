@@ -1005,11 +1005,11 @@ namespace d_stl {
 		void remove_if(UnaryPredicate p);
 		void reverse();
 		//just for consecutive duplicate elements
-		void unipue();
+		void unique();
 		template<class BinaryPredicate>
 		void unique(BinaryPredicate p);
 		//stable sort
-		//merge sort???
+		//merge sort
 		void sort();
 		template<class Compare>
 		void sort(Compare comp);
@@ -1029,7 +1029,7 @@ namespace d_stl {
 
 		ptr_node merge_sort(ptr_node first);
 		template<class Compare>
-		ptr_node merge_sort(ptr_node first1, Compare comp);
+		ptr_node merge_sort(ptr_node first, Compare comp);
 		ptr_node merge_base(ptr_node first1, ptr_node first2);
 		template<class Compare>
 		ptr_node merge_base(ptr_node first1, ptr_node first2, Compare comp);
@@ -1260,6 +1260,10 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::merge(list& other) {
+		/*
+		//should't write again
+		//should reuse merge_base
+
 		if (this == &other) {
 			return;
 		}
@@ -1303,7 +1307,36 @@ namespace d_stl {
 				this_ptr->prev = other_ptr;	
 			}
 		}
+		*/
+		
+		if (other.empty()) {
+			return;
+		}
+		ptr_node other_current = other.end().data();
+		if (empty()) {
+			ptr_node tmp = other_current;
+			other_current = current;
+			current = tmp;
+			return;
+		}
+		
+		ptr_node first1 = current->next;
+		current->prev->next = nullptr;
+		ptr_node first2 = other_current->next;
+		other_current->prev->next = nullptr;
 
+		first1 = merge_base(first1, first2);
+		ptr_node last1 = first1;
+		while (last1->next != nullptr) {
+			last1 = last1->next;
+		}
+
+		current->next = first1;
+		first1->prev = current;
+		current->prev = last1;
+		last1->next = current;
+		other_current->prev = other_current;
+		other_current->next = other_current;
 	}
 
 	template<class T>
@@ -1314,53 +1347,7 @@ namespace d_stl {
 	template<class T>
 	template<class Compare>
 	void list<T>::merge(list& other, Compare comp) {
-		if (this == &other) {
-			return;
-		}
-
-		const_iterator this_iter = cbegin();
-		const_iterator other_iter = other.cbegin();
-		while (!(this_iter == cend() && other_iter == other.cend())) {
-			if (other_iter == other.cend()) {
-				return;
-			}
-			else if (this_iter == cend()) {
-				//other_iter != other.cend()
-				ptr_node this_last_ptr = this_iter.data()->prev;
-				ptr_node other_ptr = other_iter.data();
-				ptr_node other_end_ptr = other.cend().data();
-				ptr_node other_last_ptr = other_end_ptr->prev;
-				//re_link
-				this_last_ptr->next = other_ptr;
-				other_ptr->prev = this_last_ptr;
-				other_last_ptr->next = current;
-				current->prev = other_last_ptr;
-				//make other empty
-				other_end_ptr->prev = other_end_ptr;
-				other_end_ptr->next = other_end_ptr;
-				return;
-			}
-			else if (!comp(*this_iter, *other_iter) && !comp(*other_iter, *this_iter)) {
-				this_iter++;//equivalent
-			}
-			else if (comp(*this_iter, *other_iter)) {
-				this_iter++;
-			}
-			else if (!comp(*this_iter, *other_iter)) {
-				ptr_node this_ptr = this_iter.data();
-				ptr_node other_ptr = other_iter.data();
-				other_iter++;
-				//other's link
-				other_ptr->prev->next = other_ptr->next;
-				other_ptr->next->prev = other_ptr->prev;
-				//"insert"
-				this_ptr->prev->next = other_ptr;
-				other_ptr->prev = this_ptr->prev;
-				other_ptr->next = this_ptr;
-				this_ptr->prev = other_ptr;
-			}
-		}
-
+		
 	}
 
 	template<class T>
@@ -1471,7 +1458,7 @@ namespace d_stl {
 	}
 
 	template<class T>
-	void list<T>::unipue() {
+	void list<T>::unique() {
 		iterator it = begin();
 		iterator it_next = ++it;
 		while (it_next != end()) {
@@ -1508,13 +1495,16 @@ namespace d_stl {
 		}
 		ptr_node first = current->next;
 		current->prev->next = nullptr;
+
 		first = merge_sort(first);
 		ptr_node last = first;
 		while (last->next != nullptr) {
 			last = last->next;
 		}
 		current->next = first;
+		first->prev = current;
 		current->prev = last;
+		last->next = current;
 	}
 
 	template<class T>
@@ -1525,13 +1515,17 @@ namespace d_stl {
 		}
 		ptr_node first = current->next;
 		current->prev->next = nullptr;
+
 		first = merge_sort(first, comp);
 		ptr_node last = first;
 		while (last->next != nullptr) {
 			last = last->next;
 		}
 		current->next = first;
+		first->prev = current;
 		current->prev = last;
+		last->next = current;
+
 	}
 
 	template<class T>
@@ -1642,7 +1636,7 @@ namespace d_stl {
 
 	template<class T>
 	template<class Compare>
-	typename list<T>::ptr_node list<T>::merge_sort(ptr_node first1, Compare comp) {
+	typename list<T>::ptr_node list<T>::merge_sort(ptr_node first, Compare comp) {
 		if (first->next == nullptr) {
 			return first;
 		}
@@ -1668,13 +1662,13 @@ namespace d_stl {
 		ptr_node tmp;
 		//find the less value  
 		if (first2->data < first1->data) {
-			merge_base(first2, first1);
+			ptr_node ptr = first1;
+			first1 = first2;
+			first2 = ptr;
 		}
-		else {
-			return_ptr = first1;
-			tmp = first1;
-			first1 = first1->next;
-		}
+		return_ptr = first1;
+		tmp = first1;
+		first1 = first1->next;
 		
 		//bidirectional
 		while (first1 != nullptr && first2 != nullptr) {
@@ -1710,14 +1704,14 @@ namespace d_stl {
 		ptr_node return_ptr;
 		ptr_node tmp;
 		//find the less value  
-		if (first2->data < first1->data) {
-			merge_base(first2, first1);
+		if (comp(first2->data, first1->data)) {
+			ptr_node ptr = first1;
+			first2 = first1;
+			first1 = ptr;
 		}
-		else {
-			return_ptr = first1;
-			tmp = first1;
-			first1 = first1->next;
-		}
+		return_ptr = first1;
+		tmp = first1;
+		first1 = first1->next;
 
 		//bidirectional
 		while (first1 != nullptr && first2 != nullptr) {
