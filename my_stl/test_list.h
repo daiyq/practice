@@ -97,6 +97,25 @@ namespace d_stl {
 		printer_containter(my_list_12, s_list_12);
 		assert(equal_containter(my_list_12, s_list_12));
 		
+		//initializer 
+		d_stl::list<int> my_list_13{ 1,2,3,4,5 };
+		std::list<int> s_list_13{ 1,2,3,4,5 };
+		printer_containter(my_list_13, s_list_13);
+		assert(equal_containter(my_list_13, s_list_13));
+
+		d_stl::list<int> my_list_14;
+		std::list<int> s_list_14;
+		my_list_14 = { 14,15,16 };
+		s_list_14 = { 14,15,16 };
+		printer_containter(my_list_14, s_list_14);
+		assert(equal_containter(my_list_14, s_list_14));
+
+		d_stl::list<int> my_list_15;
+		std::list<int> s_list_15;
+		my_list_15.assign({ 15,16 });
+		s_list_15.assign({ 15,16 });
+		printer_containter(my_list_15, s_list_15);
+		assert(equal_containter(my_list_15, s_list_15));
 	}
 
 	void test_case_list_iterator() {

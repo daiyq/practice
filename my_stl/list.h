@@ -1080,6 +1080,11 @@ namespace d_stl {
 
 	template<class T>
 	list<T>::list(std::initializer_list<T> ilist) {
+		initialize();
+		const_iterator pos = cbegin();
+		const T* first = ilist.begin();
+		const T* last = ilist.end();
+		insert_base(pos, first, last, typename std::is_integral<const T*>::type());
 	}
 
 	template<class T>
@@ -1111,6 +1116,13 @@ namespace d_stl {
 
 	template<class T>
 	list<T>& list<T>::operator=(std::initializer_list<T> ilist) {
+		delete_context();
+		const_iterator pos = cbegin();
+		const T* first = ilist.begin();
+		const T* last = ilist.end();
+		insert_base(pos, first, last, typename std::is_integral<const T*>::type());
+
+		return *this;
 	}
 
 	template<class T>
@@ -1130,6 +1142,11 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::assign(std::initializer_list<T> ilist) {
+		delete_context();
+		const_iterator pos = cbegin();
+		const T* first = ilist.begin();
+		const T* last = ilist.end();
+		insert_base(pos, first, last, typename std::is_integral<const T*>::type());
 	}
 
 	template<class T>
@@ -1341,7 +1358,34 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::merge(list&& other) {
-		
+		if (other.empty()) {
+			return;
+		}
+		ptr_node other_current = other.end().data();
+		if (empty()) {
+			ptr_node tmp = other_current;
+			other_current = current;
+			current = tmp;
+			return;
+		}
+
+		ptr_node first1 = current->next;
+		current->prev->next = nullptr;
+		ptr_node first2 = other_current->next;
+		other_current->prev->next = nullptr;
+
+		first1 = merge_base(first1, first2);
+		ptr_node last1 = first1;
+		while (last1->next != nullptr) {
+			last1 = last1->next;
+		}
+
+		current->next = first1;
+		first1->prev = current;
+		current->prev = last1;
+		last1->next = current;
+		other_current->prev = other_current;
+		other_current->next = other_current;
 	}
 
 	template<class T>
@@ -1375,7 +1419,19 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::splice(const_iterator pos, list&& other) {
-		
+		if (other.empty()) {
+			return;
+		}
+		ptr_node pos_ptr = pos.data();
+		ptr_node first_ptr = other.begin().data();
+		ptr_node last_ptr = other.end().data();
+		pos_ptr->prev->next = first_ptr;
+		first_ptr->prev = pos_ptr->prev;
+		last_ptr->prev->next = pos_ptr;
+		pos_ptr->prev = last_ptr->prev;
+		//make other empty
+		last_ptr->prev = last_ptr;
+		last_ptr->next = last_ptr;
 	}
 
 	template<class T>
@@ -1394,6 +1450,16 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::splice(const_iterator pos, list&& other, const_iterator it) {
+		ptr_node pos_ptr = pos.data();
+		ptr_node it_ptr = it.data();
+		//re_link in other
+		it_ptr->prev->next = it_ptr->next;
+		it_ptr->next->prev = it_ptr->prev;
+		//"insert"
+		pos_ptr->prev->next = it_ptr;
+		it_ptr->prev = pos_ptr->prev;
+		it_ptr->next = pos_ptr;
+		pos_ptr->prev = it_ptr;
 	}
 
 	template<class T>
@@ -1409,12 +1475,23 @@ namespace d_stl {
 		pos_ptr->prev->next = first_ptr;
 		first_ptr->prev = pos_ptr->prev;
 		pre_last_ptr->next = pos_ptr;
-		pos_ptr->prev = pre_last_ptr;
-		
+		pos_ptr->prev = pre_last_ptr;	
 	}
 
 	template<class T>
 	void list<T>::splice(const_iterator pos, list&& other, const_iterator first, const_iterator last) {
+		ptr_node pos_ptr = pos.data();
+		ptr_node first_ptr = first.data();
+		ptr_node last_ptr = last.data();
+		ptr_node pre_last_ptr = last_ptr->prev;
+		//re_link in other
+		first_ptr->prev->next = last_ptr;
+		last_ptr->prev = first_ptr->prev;
+		//"insert"
+		pos_ptr->prev->next = first_ptr;
+		first_ptr->prev = pos_ptr->prev;
+		pre_last_ptr->next = pos_ptr;
+		pos_ptr->prev = pre_last_ptr;
 	}
 
 	template<class T>
