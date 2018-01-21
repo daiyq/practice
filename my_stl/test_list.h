@@ -262,50 +262,40 @@ namespace d_stl {
 	}
 	
 	void test_case_list_operations() {
-		d_stl::list<int> my_list_1;
-		std::list<int> s_list_1;
-		int i = 9;
-		while (i >= 0) {
-			my_list_1.push_back(i);
-			s_list_1.push_back(i);
-			i--;
-		}
-		//printer_containter(my_list_1, s_list_1);
-		//assert(equal_containter(my_list_1, s_list_1));
+		d_stl::list<int> my_list_1{ 9,8,7,6,5,4,3,2,1,0 };
+		std::list<int> s_list_1{ 9,8,7,6,5,4,3,2,1,0 };
+		
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
 
 		my_list_1.sort();
 		s_list_1.sort();
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
 
-		/*
-		auto f = [](const int& lhs, const int& rhs) {
-			if (lhs > rhs)
-				return true;
-			return false;
-		};
-		my_list_1.sort(f);
-		s_list_1.sort(f);
-		printer_containter(my_list_1, s_list_1);
-		assert(equal_containter(my_list_1, s_list_1));
-		*/
-		d_stl::list<int> my_list_2;
-		std::list<int> s_list_2;
-		int j = 12;
-		while (j >= 6) {
-			my_list_2.push_back(j);
-			s_list_2.push_back(j);
-			j--;
-		}
-		my_list_2.sort();
-		s_list_2.sort();
-		printer_containter(my_list_2, s_list_2);
+		
+		d_stl::list<int> my_list_2{ 6,7,8,9,10,11 };
+		std::list<int> s_list_2{ 6,7,8,9,10,11 };
 		my_list_1.merge(my_list_2);
 		s_list_1.merge(s_list_2);
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
 
-		j = 20;
+		/*
+		auto so = [](const int& lhs, const int& rhs) {
+			return lhs > rhs;
+		};
+		d_stl::list<int> my_list_21{ 21,20,19,18,17 };
+		std::list<int> s_list_21{ 21,20,19,18,17 };
+		d_stl::list<int> my_list_22{ 23,22,21,20 };
+		std::list<int> s_list_22{ 23,22,21,20 };
+		//my_list_21.merge(my_list_22, so);
+		s_list_21.merge(s_list_22, so);
+		printer_containter(my_list_21, s_list_21);
+		assert(equal_containter(my_list_21, s_list_21));
+		*/
+
+		int j = 20;
 		while (j >= 15) {
 			my_list_2.push_back(j);
 			s_list_2.push_back(j);
@@ -354,17 +344,42 @@ namespace d_stl {
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
 
+		auto re = [](const int& i) {
+			return i % 2 == 0;
+		};
+		my_list_1.remove_if(re);
+		s_list_1.remove_if(re);
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+
 		my_list_1.reverse();
 		s_list_1.reverse();
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
 
-		
 		my_list_1.unique();
 		s_list_1.unique();
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
+
+		d_stl::list<int> my_list_3{ 9,9,7,7,5,5,3,2,1,0 };
+		std::list<int> s_list_3{ 9,9,7,7,5,5,3,2,1,0 };
+		my_list_3.unique();
+		s_list_3.unique();
+		printer_containter(my_list_3, s_list_3);
+		assert(equal_containter(my_list_3, s_list_3));
 		
+		d_stl::list<int> my_list_4{ 9,9,7,7,5,5,3,2,1,0 };
+		std::list<int> s_list_4{ 9,9,7,7,5,5,3,2,1,0 };
+		auto un = [](const int& lhs, const int& rhs) {
+			return lhs != rhs;
+		};
+		my_list_4.unique(un);
+		s_list_4.unique(un);
+		printer_containter(my_list_4, s_list_4);
+		assert(equal_containter(my_list_4, s_list_4));
+
+
 	}
 
 	void test_case_list_compares() {

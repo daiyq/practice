@@ -1391,7 +1391,34 @@ namespace d_stl {
 	template<class T>
 	template<class Compare>
 	void list<T>::merge(list& other, Compare comp) {
-		
+		if (other.empty()) {
+			return;
+		}
+		ptr_node other_current = other.end().data();
+		if (empty()) {
+			ptr_node tmp = other_current;
+			other_current = current;
+			current = tmp;
+			return;
+		}
+
+		ptr_node first1 = current->next;
+		current->prev->next = nullptr;
+		ptr_node first2 = other_current->next;
+		other_current->prev->next = nullptr;
+
+		first1 = merge_base(first1, first2, comp);
+		ptr_node last1 = first1;
+		while (last1->next != nullptr) {
+			last1 = last1->next;
+		}
+
+		current->next = first1;
+		first1->prev = current;
+		current->prev = last1;
+		last1->next = current;
+		other_current->prev = other_current;
+		other_current->next = other_current;
 	}
 
 	template<class T>
@@ -1550,7 +1577,15 @@ namespace d_stl {
 	template<class T>
 	template<class BinaryPredicate>
 	void list<T>::unique(BinaryPredicate p) {
-		
+		ptr_node first = current->next;
+		while (first->next != current) {
+			if (p(first->data, first->next->data)) {
+				delete_node(first->next);
+			}
+			else {
+				first = first->next;
+			}
+		}
 	}
 
 	template<class T>
@@ -1715,8 +1750,8 @@ namespace d_stl {
 		}
 		//get two child lists
 		slow->prev->next = nullptr;
-		ptr_node first_ptr = merge_sort(first);
-		ptr_node second_ptr = merge_sort(slow);
+		ptr_node first_ptr = merge_sort(first, comp);
+		ptr_node second_ptr = merge_sort(slow, comp);
 		return merge_base(first_ptr, second_ptr, comp);
 	}
 
