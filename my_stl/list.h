@@ -1033,6 +1033,8 @@ namespace d_stl {
 		ptr_node merge_base(ptr_node first1, ptr_node first2);
 		template<class Compare>
 		ptr_node merge_base(ptr_node first1, ptr_node first2, Compare comp);
+
+		void relink(ptr_node first, ptr_node last);
 		
 	};
 
@@ -1203,8 +1205,7 @@ namespace d_stl {
 			delete p_first;
 			p_first = first_next;
 		}
-		pre_p_first->next = p_first;
-		p_first->prev = pre_p_first;
+		relink(pre_p_first, p_first);
 		return iterator(p_last);
 	}
 
@@ -1348,12 +1349,9 @@ namespace d_stl {
 			last1 = last1->next;
 		}
 
-		current->next = first1;
-		first1->prev = current;
-		current->prev = last1;
-		last1->next = current;
-		other_current->prev = other_current;
-		other_current->next = other_current;
+		relink(current, first1);
+		relink(last1, current);
+		relink(other_current, other_current);
 	}
 
 	template<class T>
@@ -1380,12 +1378,9 @@ namespace d_stl {
 			last1 = last1->next;
 		}
 
-		current->next = first1;
-		first1->prev = current;
-		current->prev = last1;
-		last1->next = current;
-		other_current->prev = other_current;
-		other_current->next = other_current;
+		relink(current, first1);
+		relink(last1, current);
+		relink(other_current, other_current);
 	}
 
 	template<class T>
@@ -1413,12 +1408,9 @@ namespace d_stl {
 			last1 = last1->next;
 		}
 
-		current->next = first1;
-		first1->prev = current;
-		current->prev = last1;
-		last1->next = current;
-		other_current->prev = other_current;
-		other_current->next = other_current;
+		relink(current, first1);
+		relink(last1, current);
+		relink(other_current, other_current);
 	}
 
 	template<class T>
@@ -1518,13 +1510,10 @@ namespace d_stl {
 		ptr_node last_ptr = last.data();
 		ptr_node pre_last_ptr = last_ptr->prev;
 		//re_link in other
-		first_ptr->prev->next = last_ptr;
-		last_ptr->prev = first_ptr->prev;
+		relink(first_ptr->prev, last_ptr);
 		//"insert"
-		pos_ptr->prev->next = first_ptr;
-		first_ptr->prev = pos_ptr->prev;
-		pre_last_ptr->next = pos_ptr;
-		pos_ptr->prev = pre_last_ptr;	
+		relink(pos_ptr->prev, first_ptr);
+		relink(pre_last_ptr, pos_ptr);
 	}
 
 	template<class T>
@@ -1534,13 +1523,10 @@ namespace d_stl {
 		ptr_node last_ptr = last.data();
 		ptr_node pre_last_ptr = last_ptr->prev;
 		//re_link in other
-		first_ptr->prev->next = last_ptr;
-		last_ptr->prev = first_ptr->prev;
+		relink(first_ptr->prev, last_ptr);
 		//"insert"
-		pos_ptr->prev->next = first_ptr;
-		first_ptr->prev = pos_ptr->prev;
-		pre_last_ptr->next = pos_ptr;
-		pos_ptr->prev = pre_last_ptr;
+		relink(pos_ptr->prev, first_ptr);
+		relink(pre_last_ptr, pos_ptr);
 	}
 
 	template<class T>
@@ -1623,10 +1609,8 @@ namespace d_stl {
 		while (last->next != nullptr) {
 			last = last->next;
 		}
-		current->next = first;
-		first->prev = current;
-		current->prev = last;
-		last->next = current;
+		relink(current, first);
+		relink(last, current);
 	}
 
 	template<class T>
@@ -1643,18 +1627,15 @@ namespace d_stl {
 		while (last->next != nullptr) {
 			last = last->next;
 		}
-		current->next = first;
-		first->prev = current;
-		current->prev = last;
-		last->next = current;
+		relink(current, first);
+		relink(last, current);
 
 	}
 
 	template<class T>
 	void list<T>::initialize() {
 		current = new node;
-		current->prev = current;
-		current->next = current;
+		relink(current, current);
 	}
 
 	template<class T>
@@ -1708,10 +1689,8 @@ namespace d_stl {
 
 		ptr_node p_pos = pos.data();
 		ptr_node pre_p_pos = p_pos->prev;
-		pre_p_pos->next = insert_node;
-		insert_node->prev = pre_p_pos;
-		insert_node->next = p_pos;
-		p_pos->prev = insert_node;
+		relink(pre_p_pos, insert_node);
+		relink(insert_node, p_pos);
 
 		return iterator(insert_node);
 	}
@@ -1722,8 +1701,7 @@ namespace d_stl {
 		ptr_node pre = p->prev;
 		ptr_node post = p->next;
 		delete p;
-		pre->next = post;
-		post->prev = pre;
+		relink(pre, post);
 		return iterator(post);
 	}
 
@@ -1732,8 +1710,7 @@ namespace d_stl {
 		ptr_node pre = p->prev;
 		ptr_node post = p->next;
 		delete p;
-		pre->next = post;
-		post->prev = pre;
+		relink(pre, post);
 	}
 
 	template<class T>
@@ -1759,22 +1736,7 @@ namespace d_stl {
 	template<class T>
 	template<class Compare>
 	typename list<T>::ptr_node list<T>::merge_sort(ptr_node first, Compare comp) {
-		if (first->next == nullptr) {
-			return first;
-		}
-
-		ptr_node slow = first;
-		ptr_node fast = first;
-		//find the middle
-		while (fast != nullptr&&fast->next != nullptr) {
-			slow = slow->next;
-			fast = fast->next->next;
-		}
-		//get two child lists
-		slow->prev->next = nullptr;
-		ptr_node first_ptr = merge_sort(first, comp);
-		ptr_node second_ptr = merge_sort(slow, comp);
-		return merge_base(first_ptr, second_ptr, comp);
+		
 	}
 
 	template<class T>
@@ -1795,25 +1757,21 @@ namespace d_stl {
 		//bidirectional
 		while (first1 != nullptr && first2 != nullptr) {
 			if (first2->data < first1->data) {
-				tmp->next = first2;
-				first2->prev = tmp;
+				relink(tmp, first2);
 				tmp = tmp->next;
-				first2 = first2->next;
+				first2 = first2->next;	
 			}
 			else {
-				tmp->next = first1;
-				first1->prev = tmp;
+				relink(tmp, first1);
 				tmp = tmp->next;
 				first1 = first1->next;
 			}
 		}
 		if (first1 != nullptr) {
-			tmp->next = first1;
-			first1->prev = tmp;
+			relink(tmp, first1);
 		}
 		if (first2 != nullptr) {
-			tmp->next = first2;
-			first2->prev = tmp;
+			relink(tmp, first2);
 		}
 
 		return return_ptr;
@@ -1822,46 +1780,15 @@ namespace d_stl {
 	template<class T>
 	template<class Compare>
 	typename list<T>::ptr_node list<T>::merge_base(ptr_node first1, ptr_node first2, Compare comp) {
-		//end with nullptr, 
-		ptr_node return_ptr;
-		ptr_node tmp;
-		//find the less value  
-		if (comp(first2->data, first1->data)) {
-			ptr_node ptr = first1;
-			first2 = first1;
-			first1 = ptr;
-		}
-		return_ptr = first1;
-		tmp = first1;
-		first1 = first1->next;
-
-		//bidirectional
-		while (first1 != nullptr && first2 != nullptr) {
-			if (comp(first2->data, first1->data)) {
-				tmp->next = first2;
-				first2->prev = tmp;
-				tmp = tmp->next;
-				first2 = first2->next;
-			}
-			else {
-				tmp->next = first1;
-				first1->prev = tmp;
-				tmp = tmp->next;
-				first1 = first1->next;
-			}
-		}
-		if (first1 != nullptr) {
-			tmp->next = first1;
-			first1->prev = tmp;
-		}
-		if (first2 != nullptr) {
-			tmp->next = first2;
-			first2->prev = tmp;
-		}
-
-		return return_ptr;
-
+		
 	}
+
+	template<class T>
+	void list<T>::relink(ptr_node first, ptr_node last) {
+		first->next = last;
+		last->prev = first;
+	}
+
 
 	template<class T>
 	bool operator==(const list<T>& lhs, const list<T>& rhs) {
