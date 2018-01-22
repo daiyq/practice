@@ -1432,6 +1432,7 @@ namespace d_stl {
 		if (other.empty()) {
 			return;
 		}
+		/*
 		ptr_node pos_ptr = pos.data();
 		ptr_node first_ptr = other.begin().data();
 		ptr_node last_ptr = other.end().data();
@@ -1442,6 +1443,10 @@ namespace d_stl {
 		//make other empty
 		last_ptr->prev = last_ptr;
 		last_ptr->next = last_ptr;
+		*/
+		const_iterator first = other.cbegin();
+		const_iterator last = other.cend();
+		splice(pos, other, first, last);
 	}
 
 	template<class T>
@@ -1449,6 +1454,7 @@ namespace d_stl {
 		if (other.empty()) {
 			return;
 		}
+		/*
 		ptr_node pos_ptr = pos.data();
 		ptr_node first_ptr = other.begin().data();
 		ptr_node last_ptr = other.end().data();
@@ -1459,10 +1465,15 @@ namespace d_stl {
 		//make other empty
 		last_ptr->prev = last_ptr;
 		last_ptr->next = last_ptr;
+		*/
+		const_iterator first = other.cbegin();
+		const_iterator last = other.cend();
+		splice(pos, other, first, last);
 	}
 
 	template<class T>
 	void list<T>::splice(const_iterator pos, list& other, const_iterator it) {
+		/*
 		ptr_node pos_ptr = pos.data();
 		ptr_node it_ptr = it.data();
 		//re_link in other
@@ -1473,10 +1484,16 @@ namespace d_stl {
 		it_ptr->prev = pos_ptr->prev;
 		it_ptr->next = pos_ptr;
 		pos_ptr->prev = it_ptr;
+		*/
+		const_iterator first = it;
+		ptr_node it_ptr = it.data();
+		const_iterator last = const_iterator(it_ptr->next);
+		splice(pos, other, first, last);
 	}
 
 	template<class T>
 	void list<T>::splice(const_iterator pos, list&& other, const_iterator it) {
+		/*
 		ptr_node pos_ptr = pos.data();
 		ptr_node it_ptr = it.data();
 		//re_link in other
@@ -1487,6 +1504,11 @@ namespace d_stl {
 		it_ptr->prev = pos_ptr->prev;
 		it_ptr->next = pos_ptr;
 		pos_ptr->prev = it_ptr;
+		*/
+		const_iterator first = it;
+		ptr_node it_ptr = it.data();
+		const_iterator last = const_iterator(it_ptr->next);
+		splice(pos, other, first, last);
 	}
 
 	template<class T>
