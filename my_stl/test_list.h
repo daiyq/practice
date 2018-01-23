@@ -184,6 +184,15 @@ namespace d_stl {
 		s_list_1.insert(s_pos4, s_lvalue1.begin(), s_lvalue1.end());
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
+
+		auto my_pos4_il = my_list_1.begin();
+		auto s_pos4_il = s_list_1.begin();
+		my_pos4_il++;
+		s_pos4_il++;
+		my_list_1.insert(my_pos4_il, {1,2 });
+		s_list_1.insert(s_pos4_il, { 1,2 });
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
 		
 		auto my_pos5 = my_list_1.begin();
 		auto s_pos5 = s_list_1.begin();
@@ -273,7 +282,16 @@ namespace d_stl {
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
 
-		
+		auto bigger = [](const int& lhs, const int& rhs) {
+			return lhs > rhs;
+		};
+		my_list_1.sort(bigger);
+		s_list_1.sort(bigger);
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+
+		my_list_1.sort();
+		s_list_1.sort();
 		d_stl::list<int> my_list_2{ 6,7,8,9,10,11 };
 		std::list<int> s_list_2{ 6,7,8,9,10,11 };
 		my_list_1.merge(my_list_2);
@@ -281,7 +299,14 @@ namespace d_stl {
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
 
-		/*
+		d_stl::list<int> my_list_2r{ 6,7,8,9,10,11 };
+		std::list<int> s_list_2r{ 6,7,8,9,10,11 };
+		my_list_1.merge(std::move(my_list_2r));
+		s_list_1.merge(std::move(s_list_2r));
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+
+		
 		auto so = [](const int& lhs, const int& rhs) {
 			return lhs > rhs;
 		};
@@ -289,11 +314,11 @@ namespace d_stl {
 		std::list<int> s_list_21{ 21,20,19,18,17 };
 		d_stl::list<int> my_list_22{ 23,22,21,20 };
 		std::list<int> s_list_22{ 23,22,21,20 };
-		//my_list_21.merge(my_list_22, so);
 		s_list_21.merge(s_list_22, so);
+		my_list_21.merge(my_list_22, so);
 		printer_containter(my_list_21, s_list_21);
 		assert(equal_containter(my_list_21, s_list_21));
-		*/
+		
 
 		int j = 20;
 		while (j >= 15) {
@@ -306,6 +331,15 @@ namespace d_stl {
 		auto s_it = s_list_1.cbegin();
 		my_list_1.splice(my_it, my_list_2);
 		s_list_1.splice(s_it, s_list_2);
+		printer_containter(my_list_1, s_list_1);
+		assert(equal_containter(my_list_1, s_list_1));
+
+		auto my_it_r = my_list_1.cbegin();
+		auto s_it_r = s_list_1.cbegin();
+		d_stl::list<int> my_list_sr{ 9,8 };
+		std::list<int> s_list_sr{ 9,8 };
+		my_list_1.splice(my_it, std::move(my_list_sr));
+		s_list_1.splice(s_it, std::move(s_list_sr));
 		printer_containter(my_list_1, s_list_1);
 		assert(equal_containter(my_list_1, s_list_1));
 

@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstddef> //ptrdiff_t, size_t
 #include <stdexcept> //throw
+#include <utility> //std::move()
 #include <initializer_list>
 #include <type_traits>
 //#include <algorithm>
@@ -105,7 +106,6 @@ namespace d_stl {
 	}
 
 //#define LIST_ALLOCATOR_
-
 #ifdef LIST_ALLOCATOR_
 
 	template<class T, class Allocator=d_stl::allocator<ListNode<T>>>
@@ -848,7 +848,7 @@ namespace d_stl {
 	}
 #endif // LIST_ALLOCATOR_
 
-
+//NO ALLOCATOR
 #ifndef LIST_ALLOCATOR_
 
 	template<class T>
@@ -1123,7 +1123,6 @@ namespace d_stl {
 		const T* first = ilist.begin();
 		const T* last = ilist.end();
 		insert_base(pos, first, last, typename std::is_integral<const T*>::type());
-
 		return *this;
 	}
 
@@ -1179,6 +1178,9 @@ namespace d_stl {
 
 	template<class T>
 	typename list<T>::iterator list<T>::insert(const_iterator pos, std::initializer_list<T> ilist) {
+		const T* first = ilist.begin();
+		const T* last = ilist.end();
+		return insert_base(pos, first, last, typename std::is_integral<const T*>::type());
 	}
 
 	template<class T>
@@ -1282,51 +1284,6 @@ namespace d_stl {
 		//should't write again
 		//should reuse merge_base
 
-		if (this == &other) {
-			return;
-		}
-
-		const_iterator this_iter = cbegin();
-		const_iterator other_iter = other.cbegin();
-		while (!(this_iter == cend() && other_iter == other.cend())) {
-			if (other_iter == other.cend()) {
-				return;
-			}
-			else if (this_iter == cend()) {
-				//other_iter != other.cend()
-				ptr_node this_last_ptr = this_iter.data()->prev;
-				ptr_node other_ptr = other_iter.data();
-				ptr_node other_end_ptr = other.cend().data();
-				ptr_node other_last_ptr = other_end_ptr->prev;
-				//re_link
-				this_last_ptr->next = other_ptr;
-				other_ptr->prev = this_last_ptr;
-				other_last_ptr->next = current;
-				current->prev = other_last_ptr;
-				//make other empty
-				other_end_ptr->prev = other_end_ptr;
-				other_end_ptr->next = other_end_ptr;
-				return;
-			}
-			else if ((*this_iter < *other_iter) || (*this_iter == *other_iter)) {
-				this_iter++;
-			}
-			else if (*this_iter > *other_iter) {
-				ptr_node this_ptr = this_iter.data();
-				ptr_node other_ptr = other_iter.data();
-				other_iter++;
-				//other's link
-				other_ptr->prev->next = other_ptr->next;
-				other_ptr->next->prev = other_ptr->prev;
-				//"insert"
-				this_ptr->prev->next = other_ptr;
-				other_ptr->prev = this_ptr->prev;
-				other_ptr->next = this_ptr;
-				this_ptr->prev = other_ptr;	
-			}
-		}
-		*/
-		
 		if (other.empty()) {
 			return;
 		}
@@ -1352,10 +1309,16 @@ namespace d_stl {
 		relink(current, first1);
 		relink(last1, current);
 		relink(other_current, other_current);
+		*/
+		auto less = [](const value_type& lhs, const value_type& rhs) {
+			return lhs < rhs;
+		};
+		merge(other, less);
 	}
 
 	template<class T>
 	void list<T>::merge(list&& other) {
+		/*
 		if (other.empty()) {
 			return;
 		}
@@ -1381,6 +1344,11 @@ namespace d_stl {
 		relink(current, first1);
 		relink(last1, current);
 		relink(other_current, other_current);
+		*/
+		auto less = [](const value_type& lhs, const value_type& rhs) {
+			return lhs < rhs;
+		};
+		merge(std::move(other), less);
 	}
 
 	template<class T>
@@ -1416,7 +1384,31 @@ namespace d_stl {
 	template<class T>
 	template<class Compare>
 	void list<T>::merge(list&& other, Compare comp) {
-		
+		if (other.empty()) {
+			return;
+		}
+		ptr_node other_current = other.end().data();
+		if (empty()) {
+			ptr_node tmp = other_current;
+			other_current = current;
+			current = tmp;
+			return;
+		}
+
+		ptr_node first1 = current->next;
+		current->prev->next = nullptr;
+		ptr_node first2 = other_current->next;
+		other_current->prev->next = nullptr;
+
+		first1 = merge_base(first1, first2, comp);
+		ptr_node last1 = first1;
+		while (last1->next != nullptr) {
+			last1 = last1->next;
+		}
+
+		relink(current, first1);
+		relink(last1, current);
+		relink(other_current, other_current);
 	}
 
 	template<class T>
@@ -1736,7 +1728,22 @@ namespace d_stl {
 	template<class T>
 	template<class Compare>
 	typename list<T>::ptr_node list<T>::merge_sort(ptr_node first, Compare comp) {
-		
+		if (first->next == nullptr) {
+			return first;
+		}
+
+		ptr_node slow = first;
+		ptr_node fast = first;
+		//find the middle
+		while (fast != nullptr&&fast->next != nullptr) {
+			slow = slow->next;
+			fast = fast->next->next;
+		}
+		//get two child lists
+		slow->prev->next = nullptr;
+		ptr_node first_ptr = merge_sort(first, comp);
+		ptr_node second_ptr = merge_sort(slow, comp);
+		return merge_base(first_ptr, second_ptr, comp);
 	}
 
 	template<class T>
@@ -1780,7 +1787,40 @@ namespace d_stl {
 	template<class T>
 	template<class Compare>
 	typename list<T>::ptr_node list<T>::merge_base(ptr_node first1, ptr_node first2, Compare comp) {
-		
+		//end with nullptr, 
+		ptr_node return_ptr;
+		ptr_node tmp;
+		//find the less value  
+		if (comp(first2->data, first1->data)) {
+			ptr_node ptr = first1;
+			first1 = first2;
+			first2 = ptr;
+		}
+		return_ptr = first1;
+		tmp = first1;
+		first1 = first1->next;
+
+		//bidirectional
+		while (first1 != nullptr && first2 != nullptr) {
+			if (comp(first2->data, first1->data)) {
+				relink(tmp, first2);
+				tmp = tmp->next;
+				first2 = first2->next;
+			}
+			else {
+				relink(tmp, first1);
+				tmp = tmp->next;
+				first1 = first1->next;
+			}
+		}
+		if (first1 != nullptr) {
+			relink(tmp, first1);
+		}
+		if (first2 != nullptr) {
+			relink(tmp, first2);
+		}
+
+		return return_ptr;
 	}
 
 	template<class T>
