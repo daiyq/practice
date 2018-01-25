@@ -2,6 +2,7 @@
 #define D_VECTOR_H_
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstddef> //ptrdiff_t, size_t
 #include <stdexcept> //throw
 #include <initializer_list>
@@ -45,18 +46,18 @@ namespace d_stl {
 		vector(InputIt first, InputIt last);
 		vector(const vector& other);
 		vector(vector&& other);
-		vector(std::initializer_list<T> ilist);//not finished
+		vector(std::initializer_list<T> ilist);
 		~vector();
 
 
 		vector& operator=(const vector& other);
 		vector& operator=(vector&& other);
-		vector& operator=(std::initializer_list<T> ilist);//not finished
+		vector& operator=(std::initializer_list<T> ilist);
 
 		void assign(size_type count, const value_type& value);
 		template<class InputIt>
 		void assign(InputIt first, InputIt last);
-		void assign(std::initializer_list<T> ilist);//not finished
+		void assign(std::initializer_list<T> ilist);
 
 		//bound checking
 		reference at(size_type pos) {
@@ -178,8 +179,8 @@ namespace d_stl {
 		void delete_data_and_memory();
 		//clean, reallocate memory, initialize begin_, end_ and stroage_
 		//but not construct
-		void reallocate_and_destory(size_type need_size);
-		void reallocate_and_copy(size_type need_size);
+		void reallocate_and_desert(size_type need_size);
+		void reallocate_and_preserve(size_type need_size);
 
 		
 		void vector_base(size_type count, const value_type& value, std::true_type);
@@ -222,12 +223,9 @@ namespace d_stl {
 	
 	template<class T, class Allocator>
 	vector<T, Allocator>::vector(const vector& other) {
-		//size_type count = other.size();
-		//ininitialized(count);
-		//uninitialized_copy(other.begin(), other.end(), begin_);
-		const_iterator tmp_first = other.begin();
-		const_iterator tmp_end = other.end();
-		vector_base(tmp_first, tmp_end, typename std::is_integral<const_iterator>::type());
+		const_iterator first = other.cbegin();
+		const_iterator last = other.cend();
+		vector_base(first, last, typename std::is_integral<const_iterator>::type());
 	}
 
 	template<class T, class Allocator>
@@ -240,7 +238,9 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	vector<T, Allocator>::vector(std::initializer_list<T> ilist) {
-		
+		const T* first = ilist.begin();
+		const T* last = ilist.end();
+		vector_base(first, last, typename std::is_integral<const T*>::type());
 	}
 
 	template<class T, class Allocator>
@@ -254,9 +254,9 @@ namespace d_stl {
 	vector<T, Allocator>& vector<T, Allocator>::operator=(const vector& other) {
 		if (this != &other) {
 			delete_data_and_memory();
-			const_iterator tmp_first = other.begin();
-			const_iterator tmp_end = other.end();
-			vector_base(tmp_first, tmp_end, typename std::is_integral<const_iterator>::type());
+			const_iterator first = other.cbegin();
+			const_iterator last = other.cend();
+			vector_base(first, last, typename std::is_integral<const_iterator>::type());
 		}
 		return *this;
 	}
@@ -275,8 +275,11 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	vector<T, Allocator>& vector<T, Allocator>::operator=(std::initializer_list<T> ilist) {
-		
-		//return *this;
+		delete_data_and_memory();
+		const T* first = ilist.begin();
+		const T* last = ilist.end();
+		vector_base(first, last, typename std::is_integral<const T*>::type());
+		return *this;
 	}
 
 	template<class T, class Allocator>
@@ -292,7 +295,9 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	void vector<T, Allocator>::assign(std::initializer_list<T> ilist) {
-		
+		const T* first = ilist.begin();
+		const T* last = ilist.end();
+		assign_base(first, last, typename std::is_integral<const T*>::type());
 	}
 
 	//functions about size
@@ -300,6 +305,7 @@ namespace d_stl {
 	void vector<T, Allocator>::reserve(size_type new_cap) {
 		if (new_cap <= capacity())
 			return;
+		/*
 		T* t_begin_ = allocate(new_cap);
 		T* t_end_ = t_begin_ + new_cap;
 		T* t_stroage_ = t_begin_ + (((sizeof(T)*new_cap + 7) / 8) * 8) / sizeof(T);
@@ -309,11 +315,16 @@ namespace d_stl {
 		begin_ = t_begin_;
 		end_ = t_end_;
 		stroage_ = t_stroage_;
+		*/
+		reallocate_and_preserve(new_cap);
 	}
 
 	template<class T, class Allocator>
 	void vector<T, Allocator>::shrink_to_fit() {
+		/*
 		deallocate(end_, stroage_ - end_);
+		*/
+		//to  be normailzed 
 		stroage_ = end_;
 	}
 
@@ -411,8 +422,9 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert(const_iterator pos, std::initializer_list<T> ilist) {
-		//insert_base(pos, init.begin(), init.end(), typename std::is_integral<const_iterator>::type());
-		
+		const T* first = ilist.begin();
+		const T* last = ilist.end();
+		return insert_base(pos, first, last, typename std::is_integral<const T*>::type());
 		/*
 		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
 		size_type count = init.size();
@@ -451,11 +463,19 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(const_iterator pos) {
-		return erase(pos, pos + 1);
+		if (pos == cend()) {
+			return;
+		}
+		const_iterator first = pos;
+		const_iterator last = ++pos;
+		return erase(first, last);
 	}
 
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(const_iterator first, const_iterator last) {
+		if (first == last) {
+			return;
+		}
 		size_type count = static_cast<size_type>(std::distance(first, last));
 		size_type dis = static_cast<size_type>(std::distance(cbegin(), first));
 		copy(last, cend(), begin_ + dis);
@@ -471,7 +491,7 @@ namespace d_stl {
 		if (end_ == stroage_) {
 			size_type dis_size = old_size == 0 ? 1 : old_size;
 			size_type new_size = 2 * dis_size;
-			reallocate_and_copy(new_size);
+			reallocate_and_preserve(new_size);
 		}
 		uninitialized_fill_n(begin_ + old_size, 1, value);
 		end_ = begin_ + old_size + 1;
@@ -483,7 +503,7 @@ namespace d_stl {
 		if (end_ == stroage_) {
 			size_type dis_size = old_size == 0 ? 1 : old_size;
 			size_type new_size = 2 * dis_size;
-			reallocate_and_copy(new_size);
+			reallocate_and_preserve(new_size);
 		}
 		uninitialized_fill_n(begin_ + old_size, 1, value);
 		end_ = begin_ + old_size + 1;
@@ -515,7 +535,7 @@ namespace d_stl {
 			else {
 				size_type old_size = size();
 				size_type new_size = count;
-				reallocate_and_copy(new_size);
+				reallocate_and_preserve(new_size);
 				uninitialized_fill_n(begin_ + old_size, count - size(), value);
 			}
 			end_ = begin_ + count;
@@ -537,7 +557,7 @@ namespace d_stl {
 	//private function to be called to allocate, deallocate and reallocate
 	template<class T, class Allocator>
 	T* vector<T, Allocator>::allocate(size_type size) {
-		T* t = data_alloc::allocate(size);
+		T* t = data_alloc::allocate(size);	
 		return t;
 	}
 
@@ -556,6 +576,7 @@ namespace d_stl {
 	template<class T, class Allocator>
 	void vector<T, Allocator>::destory(T* first, T* last) {
 		data_alloc::destory(first, last);
+		
 	}
 
 	template<class T, class Allocator>
@@ -565,7 +586,7 @@ namespace d_stl {
 	}
 
 	template<class T, class Allocator>
-	void vector<T, Allocator>::reallocate_and_destory(size_type need_size) {
+	void vector<T, Allocator>::reallocate_and_desert(size_type need_size) {
 		T* t_begin_ = allocate(need_size);
 		T* t_end_ = t_begin_ + need_size;
 		T* t_stroage_ = t_begin_ + (((sizeof(T)*need_size + 7) / 8) * 8) / sizeof(T);
@@ -577,7 +598,7 @@ namespace d_stl {
 	}
 
 	template<class T, class Allocator>
-	void vector<T, Allocator>::reallocate_and_copy(size_type need_size) {
+	void vector<T, Allocator>::reallocate_and_preserve(size_type need_size) {
 		T* t_begin_ = allocate(need_size);
 		T* t_stroage_ = t_begin_ + (((sizeof(T)*need_size + 7) / 8) * 8) / sizeof(T);
 
@@ -608,7 +629,7 @@ namespace d_stl {
 	template<class T, class Allocator>
 	void vector<T, Allocator>::assign_base(size_type count, const value_type& value, std::true_type) {
 		if (capacity() < count) {
-			reallocate_and_destory(count);
+			reallocate_and_desert(count);
 		}
 		else {
 			destory(begin_, end_);
@@ -622,7 +643,7 @@ namespace d_stl {
 	void vector<T, Allocator>::assign_base(InputIt first, InputIt last, std::false_type) {
 		size_type count = static_cast<size_type>(std::distance(first, last));
 		if (capacity() < count) {
-			reallocate_and_destory(count);
+			reallocate_and_desert(count);
 		}
 		else {
 			destory(begin_, end_);

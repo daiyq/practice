@@ -55,7 +55,7 @@ namespace d_stl {
 		if (left >= (bytes*nobjs)) {
 			result = start_free;
 			start_free += bytes*nobjs;
-			return start_free;
+			return result;
 		}
 		else if (left >= bytes) {
 			result = start_free;
@@ -76,7 +76,7 @@ namespace d_stl {
 
 			start_free = static_cast<char*>(std::malloc(bytes_to_get));
 			if (start_free == nullptr) {
-				std::size_t i = bytes;
+				std::size_t i = ALIGN;
 				obj** my_free_list;
 				obj* tmp;
 				for (; i <= MAX_BYTES; i += ALIGN) {
@@ -90,7 +90,7 @@ namespace d_stl {
 					}
 				}
 				end_free = nullptr;
-				start_free = static_cast<char*>(first_allocate(bytes_to_get));
+				//start_free = static_cast<char*>(first_allocate(bytes_to_get));
 			}
 
 			end_free = start_free + bytes_to_get;
@@ -102,30 +102,30 @@ namespace d_stl {
 	}
 
 	void* alloc::first_allocate(std::size_t n) {
+		/*
 		void* result;
 		result = std::malloc(n);
 		if (result == nullptr)
 			throw std::bad_alloc();  //out of memory
 		return result;
+		*/
+		return std::malloc(n);
 	}
 	void alloc::first_deallocate(void* p, std::size_t n) {
 		std::free(p);
 	}
 
 	void* alloc::second_allocate(std::size_t n) {
-		obj** my_free_list;
 		obj* result;
-		my_free_list = free_list + free_list_index(n);
-		result = *my_free_list;
+		result = free_list[free_list_index(n)];
 		if (result == nullptr) {
-			void* r = refill(round_up(n));
-			return r;
+			return refill(round_up(n));
 		}
-		*my_free_list = result->next; //adjust the pointer, use of equal pointer
+		free_list[free_list_index(n)] = result->next; //adjust the pointer, use of equal pointer
 		return result;
 	}
 	void alloc::second_deallocate(void* p, std::size_t n) {
-		obj** my_free_list;
+		obj* result;
 		obj* tmp = static_cast<obj*>(p);
 		//difference between allocate and deallocate
 		//for example: 12 bytes for allocate, it should in (12+8-1)/8=2, the second node,
@@ -138,9 +138,9 @@ namespace d_stl {
 		//note:
 		//memory deallocated must be allocated from allocate()
 		//so, it must be multples of 8
-		my_free_list = free_list + free_list_index(n);
-		tmp->next = *my_free_list;
-		*my_free_list = tmp;
+		result = free_list[free_list_index(n)];
+		tmp->next = result;
+		result = tmp;
 	}
 
 	void* alloc::allocate(std::size_t n) {
