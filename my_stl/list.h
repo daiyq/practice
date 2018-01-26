@@ -105,7 +105,7 @@ namespace d_stl {
 		return (lhs.current != rhs.current);
 	}
 
-//#define LIST_ALLOCATOR_
+#define LIST_ALLOCATOR_
 #ifdef LIST_ALLOCATOR_
 
 	template<class T, class Allocator=d_stl::allocator<ListNode<T>>>
@@ -211,8 +211,10 @@ namespace d_stl {
 		}
 		size_type size() const noexcept {
 			size_type i = 0;
-			while (current->next != current) {
+			ptr_node pt = current->next;
+			while (pt != current) {
 				i++;
+				pt = pt->next;
 			}
 			return i;
 		}
@@ -258,7 +260,7 @@ namespace d_stl {
 		template<class UnaryPredicate>
 		void remove_if(UnaryPredicate p);
 		void reverse();
-		void unipue();
+		void unique();
 		template<class BinaryPredicate>
 		void unique(BinaryPredicate p);
 		void sort();
@@ -266,41 +268,37 @@ namespace d_stl {
 		void sort(Compare comp);
 
 	private:
-		ptr_node allocate(size_type size);
+		ptr_node allocate();
 		void initialize();//initialize the header
-		//void deallocate(ptr_node p, size_type size);
 		void deallocate(ptr_node p);
+
 		void destory(ptr_node p);
 		void delete_data_and_memory();
 		void delete_context();//reserve header
 		
-		/*
-		void list_base(size_type count, const value_type& value, std::true_type);
-		template<class InputIt>
-		void list_base(InputIt first, InputIt last, std::false_type);
-		
-		void assign_base(size_type count, const value_type& value, std::true_type);
-		template<class InputIt>
-		void assign_base(InputIt first, InputIt last, std::false_type);
-		*/
-
 		iterator insert_base(const_iterator pos, size_type count, const value_type& value, std::true_type);
 		template<class InputIt>
 		iterator insert_base(const_iterator pos, InputIt first, InputIt last, std::false_type);
 
 		iterator insert_node(const_iterator pos, const value_type& value);
+		iterator delete_node(iterator pos);
 		void delete_node(ptr_node p);
+
+		template<class Compare>
+		ptr_node merge_sort(ptr_node first, Compare comp);
+		template<class Compare>
+		ptr_node merge_base(ptr_node first1, ptr_node first2, Compare comp);
+
+		void relink(ptr_node first, ptr_node last);
 	};
 
 	template<class T,class Allocator>
 	list<T, Allocator>::list() {
-		//list_base(0, value_type(), typename std::is_integral<size_type>::type());
 		initialize();
 	}
 
 	template<class T, class Allocator>
 	list<T, Allocator>::list(size_type count) {
-		//list_base(count, value_type(), typename std::is_integral<size_type>::type());
 		initialize();
 		const_iterator pos = cbegin();
 		insert_base(pos, count, value_type(), typename std::is_integral<size_type>::type());
@@ -308,7 +306,6 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	list<T, Allocator>::list(size_type count, const value_type& value) {
-		//list_base(count, value, typename std::is_integral<size_type>::type());
 		initialize();
 		const_iterator pos = cbegin();
 		insert_base(pos, count, value, typename std::is_integral<size_type>::type());
@@ -317,7 +314,6 @@ namespace d_stl {
 	template<class T, class Allocator>
 	template<class InputIt>
 	list<T, Allocator>::list(InputIt first, InputIt last) {
-		//list_base(first, last, typename std::is_integral<InputIt>::type());
 		initialize();
 		const_iterator pos = cbegin();
 		insert_base(pos, first, last, typename std::is_integral<InputIt>::type());
@@ -325,9 +321,6 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	list<T, Allocator>::list(const list& other) {
-		//const_iterator tmp_first = other.begin();
-		//const_iterator tmp_end = other.end();
-		//list_base(tmp_first, tmp_end, typename std::is_integral<const_iterator>::type());
 		initialize();
 		const_iterator pos = cbegin();
 		const_iterator first = other.begin();
@@ -343,6 +336,11 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	list<T, Allocator>::list(std::initializer_list<T> ilist) {
+		initialize();
+		const_iterator pos = cbegin();
+		const T* first = ilist.begin();
+		const T* last = ilist.end();
+		insert_base(pos, first, last, typename std::is_integral<const T*>::type());
 	}
 
 	template<class T, class Allocator>
@@ -353,12 +351,6 @@ namespace d_stl {
 	template<class T, class Allocator>
 	list<T, Allocator>& list<T, Allocator>::operator=(const list& other) {
 		if (this != &other) {
-			/*
-			delete_data_and_memory();
-			const_iterator tmp_first = other.begin();
-			const_iterator tmp_end = other.end();
-			list_base(tmp_first, tmp_end, typename std::is_integral<const_iterator>::type());
-			*/
 			delete_context();
 			const_iterator pos = cbegin();
 			const_iterator first = other.begin();
@@ -380,11 +372,16 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	list<T, Allocator>& list<T, Allocator>::operator=(std::initializer_list<T> ilist) {
+		delete_context();
+		const_iterator pos = cbegin();
+		const T* first = ilist.begin();
+		const T* last = ilist.end();
+		insert_base(pos, first, last, typename std::is_integral<const T*>::type());
+		return *this;
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::assign(size_type count, const value_type& value) {
-		//assign_base(count, value, typename std::is_integral<size_type>::type());
 		delete_context();
 		const_iterator pos = cbegin();
 		insert_base(pos, count, value, typename std::is_integral<size_type>::type());
@@ -393,7 +390,6 @@ namespace d_stl {
 	template<class T, class Allocator>
 	template<class InputIt>
 	void list<T, Allocator>::assign(InputIt first, InputIt last) {
-		//assign_base(first, last, typename std::is_integral<InputIt>::type());
 		delete_context();
 		const_iterator pos = cbegin();
 		insert_base(pos, first, last, typename std::is_integral<InputIt>::type());
@@ -401,6 +397,11 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::assign(std::initializer_list<T> ilist) {
+		delete_context();
+		const_iterator pos = cbegin();
+		const T* first = ilist.begin();
+		const T* last = ilist.end();
+		insert_base(pos, first, last, typename std::is_integral<const T*>::type());
 	}
 
 	template<class T, class Allocator>
@@ -410,13 +411,11 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	typename list<T, Allocator>::iterator list<T, Allocator>::insert(const_iterator pos, const value_type& value) {
-		//return insert_base(pos, 1, value, typename std::is_integral<size_type>::type());
 		return insert_node(pos, value);
 	}
 
 	template<class T, class Allocator>
 	typename list<T, Allocator>::iterator list<T, Allocator>::insert(const_iterator pos, value_type&& value) {
-		//return insert_base(pos, 1, value_type(value), typename std::is_integral<size_type>::type());
 		return insert_node(pos, value_type(value));
 	}
 
@@ -433,18 +432,38 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	typename list<T, Allocator>::iterator list<T, Allocator>::insert(const_iterator pos, std::initializer_list<T> ilist) {
+		const T* first = ilist.begin();
+		const T* last = ilist.end();
+		return insert_base(pos, first, last, typename std::is_integral<const T*>::type());
 	}
 
 	template<class T, class Allocator>
 	typename list<T, Allocator>::iterator list<T, Allocator>::erase(const_iterator pos) {
-		const_iterator post_pos = pos;
-		++post_pos;
-		erase(pos, post_pos);
+		if (pos == cend()) {
+			return pos;
+		}
+		return delete_node(pos);
 	}
 
 	template<class T, class Allocator>
 	typename list<T, Allocator>::iterator list<T, Allocator>::erase(const_iterator first, const_iterator last) {
+		if (first == last) {
+			return last;
+		}
 
+		ptr_node p_first = first.data();
+		ptr_node p_last = last.data();
+		ptr_node pre_p_first = p_first->prev;
+
+		ptr_node first_next;
+		while (p_first != p_last) {
+			first_next = p_first->next;
+			destory(p_first);
+			deallocate(p_first);
+			p_first = first_next;
+		}
+		relink(pre_p_first, p_first);
+		return iterator(p_last);
 	}
 
 	template<class T, class Allocator>
@@ -461,7 +480,7 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::pop_back() {
-		const_iterator pos = cend();
+		iterator pos = end();
 		--pos;
 		erase(pos);
 	}
@@ -516,99 +535,250 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::merge(list& other) {
+		auto less = [](const value_type& lhs, const value_type& rhs) {
+			return lhs < rhs;
+		};
+		merge(other, less);
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::merge(list&& other) {
+		auto less = [](const value_type& lhs, const value_type& rhs) {
+			return lhs < rhs;
+		};
+		merge(std::move(other), less);
 	}
 
 	template<class T, class Allocator>
 	template<class Compare>
 	void list<T, Allocator>::merge(list& other, Compare comp) {
+		if (other.empty()) {
+			return;
+		}
+		ptr_node other_current = other.end().data();
+		if (empty()) {
+			ptr_node tmp = other_current;
+			other_current = current;
+			current = tmp;
+			return;
+		}
+
+		ptr_node first1 = current->next;
+		current->prev->next = nullptr;
+		ptr_node first2 = other_current->next;
+		other_current->prev->next = nullptr;
+
+		first1 = merge_base(first1, first2, comp);
+		ptr_node last1 = first1;
+		while (last1->next != nullptr) {
+			last1 = last1->next;
+		}
+
+		relink(current, first1);
+		relink(last1, current);
+		relink(other_current, other_current);
 	}
 
 	template<class T, class Allocator>
 	template<class Compare>
 	void list<T, Allocator>::merge(list&& other, Compare comp) {
+		if (other.empty()) {
+			return;
+		}
+		ptr_node other_current = other.end().data();
+		if (empty()) {
+			ptr_node tmp = other_current;
+			other_current = current;
+			current = tmp;
+			return;
+		}
+
+		ptr_node first1 = current->next;
+		current->prev->next = nullptr;
+		ptr_node first2 = other_current->next;
+		other_current->prev->next = nullptr;
+
+		first1 = merge_base(first1, first2, comp);
+		ptr_node last1 = first1;
+		while (last1->next != nullptr) {
+			last1 = last1->next;
+		}
+
+		relink(current, first1);
+		relink(last1, current);
+		relink(other_current, other_current);
 	}
 	
 	template<class T, class Allocator>
 	void list<T, Allocator>::splice(const_iterator pos, list& other) {
+		if (other.empty()) {
+			return;
+		}
+
+		const_iterator first = other.cbegin();
+		const_iterator last = other.cend();
+		splice(pos, other, first, last);
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::splice(const_iterator pos, list&& other) {
+		if (other.empty()) {
+			return;
+		}
+
+		const_iterator first = other.cbegin();
+		const_iterator last = other.cend();
+		splice(pos, other, first, last);
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::splice(const_iterator pos, list& other, const_iterator it) {
+		const_iterator first = it;
+		ptr_node it_ptr = it.data();
+		const_iterator last = const_iterator(it_ptr->next);
+		splice(pos, other, first, last);
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::splice(const_iterator pos, list&& other, const_iterator it) {
+		const_iterator first = it;
+		ptr_node it_ptr = it.data();
+		const_iterator last = const_iterator(it_ptr->next);
+		splice(pos, other, first, last);
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::splice(const_iterator pos, list& other, const_iterator first, const_iterator last) {
+		ptr_node pos_ptr = pos.data();
+		ptr_node first_ptr = first.data();
+		ptr_node last_ptr = last.data();
+		ptr_node pre_last_ptr = last_ptr->prev;
+		//re_link in other
+		relink(first_ptr->prev, last_ptr);
+		//"insert"
+		relink(pos_ptr->prev, first_ptr);
+		relink(pre_last_ptr, pos_ptr);
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::splice(const_iterator pos, list&& other, const_iterator first, const_iterator last) {
+		ptr_node pos_ptr = pos.data();
+		ptr_node first_ptr = first.data();
+		ptr_node last_ptr = last.data();
+		ptr_node pre_last_ptr = last_ptr->prev;
+		//re_link in other
+		relink(first_ptr->prev, last_ptr);
+		//"insert"
+		relink(pos_ptr->prev, first_ptr);
+		relink(pre_last_ptr, pos_ptr);
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::remove(const value_type& value) {
+		auto it = begin();
+		while (it != end()) {
+			if (*it == value) {
+				it = erase(it);
+			}
+			else {
+				it++;
+			}
+		}
 	}
 
 	template<class T, class Allocator>
 	template<class UnaryPredicate>
 	void list<T, Allocator>::remove_if(UnaryPredicate p) {
+		auto it = begin();
+		while (it != end()) {
+			if (p(*it)) {
+				it = erase(it);
+			}
+			else {
+				it++;
+			}
+		}
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::reverse() {
+		ptr_node ptr = current;
+		ptr_node ptr_next = ptr->next;
+		while (ptr_next != current) {
+			ptr_next = ptr->next;
+			auto tmp = ptr->prev;
+			ptr->prev = ptr->next;
+			ptr->next = tmp;
+			ptr = ptr_next;
+		}
 	}
 
 	template<class T, class Allocator>
-	void list<T, Allocator>::unipue() {
+	void list<T, Allocator>::unique() {
+		ptr_node first = current->next;
+		while (first->next != current) {
+			if (first->data == first->next->data) {
+				delete_node(first->next);
+			}
+			else {
+				first = first->next;
+			}
+		}
 	}
 
 	template<class T, class Allocator>
 	template<class BinaryPredicate>
 	void list<T, Allocator>::unique(BinaryPredicate p) {
+		ptr_node first = current->next;
+		while (first->next != current) {
+			if (p(first->data, first->next->data)) {
+				delete_node(first->next);
+			}
+			else {
+				first = first->next;
+			}
+		}
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::sort() {
+		auto less = [](const value_type& lhs, const value_type& rhs) {
+			return lhs < rhs;
+		};
+		sort(less);
 	}
 
 	template<class T, class Allocator>
 	template<class Compare>
 	void list<T, Allocator>::sort(Compare comp) {
+		if (empty()) {
+			return;
+		}
+		ptr_node first = current->next;
+		current->prev->next = nullptr;
+
+		first = merge_sort(first, comp);
+		ptr_node last = first;
+		while (last->next != nullptr) {
+			last = last->next;
+		}
+		relink(current, first);
+		relink(last, current);
 	}
 
-
 	template<class T, class Allocator>
-	typename list<T, Allocator>::ptr_node list<T, Allocator>::allocate(size_type size) {
-		ptr_node n = data_alloc::allocate(size);
+	typename list<T, Allocator>::ptr_node list<T, Allocator>::allocate() {
+		ptr_node n = data_alloc::allocate(1);
 		return n;
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::initialize() {
-		current = allocate(1);
+		current = allocate();
 		node n;
 		uninitialized_fill_n(current, 1, n);
-		current->prev = current;
-		current->next = current;
+		relink(current, current);
 	}
-
-	/*
-	template<class T, class Allocator>
-	void list<T, Allocator>::deallocate(ptr_node p, size_type size) {
-		data_alloc::deallocate(p, size);
-	}
-	*/
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::deallocate(ptr_node p) {
@@ -627,119 +797,17 @@ namespace d_stl {
 		}
 		delete_context();
 		destory(current);
-		//deallocate(current, 1);
 		deallocate(current);
 	}
 
 	template<class T, class Allocator>
 	void list<T, Allocator>::delete_context() {
-		/*
-		ptr_node tmp = current->next;
-		while (current->next != current) {
-			current->next = tmp->next;
-			destory(tmp);
-			deallocate(tmp, 1);
-
-			tmp = current->next;
-		}
-		current->prev = current;
-		*/
 		ptr_node tmp = current->next;
 		while (current->next != current) {
 			delete_node(tmp);
 			tmp = current->next;
 		}
 	}
-
-
-	//allocate a array for initialize list, but something is wrong with initialization
-	//maybe memory distributed?
-	//so, allocate one by one
-	//size_type size = static_cast<size_type>(d_stl::distance(first, last));
-	/*
-	size_type size = 0;
-	auto it = first;
-	while (it != last) {
-	it++;
-	size += 1;
-	}
-
-	ptr_node insert_node = allocate(size);
-	node n;
-	uninitialized_fill_n(insert_node, size, n);
-
-	ptr_node tmp = insert_node;
-	for (std::size_t i = 0; i < size - 1; i++) {
-	tmp->data = *first;
-	++first;
-
-	tmp->next = tmp + 1;
-	tmp->next->prev = tmp;
-	++tmp;
-	}
-
-	//ptr_node p_pos = pos.current;
-	ptr_node p_pos = pos.data();
-	ptr_node pre_p_pos = p_pos->prev;
-	pre_p_pos->next = insert_node;
-	insert_node->prev = pre_p_pos;
-	tmp->next = p_pos;
-	p_pos->prev = tmp;
-
-	return iterator(insert_node);
-	*/
-	/*
-	template<class T, class Allocator>
-	void list<T, Allocator>::list_base(size_type count, const value_type& value, std::true_type) {
-		
-		initialize();
-		if (count == 0) {
-			return;
-		}
-		
-		iterator it = begin();
-		while (count != 0) {
-			iterator it1 = insert_node(it, value);
-			it = it1;
-			count--;
-		}
-		
-	}
-	
-	template<class T, class Allocator>
-	template<class InputIt>
-	void list<T, Allocator>::list_base(InputIt first, InputIt last, std::false_type) {
-		
-		initialize();
-		
-		auto it = last;
-		iterator pos1 = begin();
-		iterator pos2;
-		while (it != first) {
-			it--;
-			pos2 = insert_node(pos1, value_type(*it));
-			pos1 = pos2;
-		}
-		
-	}
-	*/
-	
-
-	/*
-	template<class T, class Allocator>
-	void list<T, Allocator>::assign_base(size_type count, const value_type& value, std::true_type) {
-		delete_data_and_memory();
-		list_base(count, value, typename std::is_integral<size_type>::type());
-	}
-
-	template<class T, class Allocator>
-	template<class InputIt>
-	void list<T, Allocator>::assign_base(InputIt first, InputIt last, std::false_type) {
-		delete_data_and_memory();
-		list_base(first, last, typename std::is_integral<InputIt>::type());
-	}
-	*/
-
 	
 	template<class T, class Allocator>
 	typename list<T, Allocator>::iterator list<T, Allocator>::insert_base(const_iterator pos, size_type count, const value_type& value, std::true_type) {
@@ -752,11 +820,9 @@ namespace d_stl {
 		return it;
 	}
 	
-
 	template<class T, class Allocator>
 	template<class InputIt>
-	typename list<T, Allocator>::iterator list<T, Allocator>::insert_base(const_iterator pos, InputIt first, InputIt last, std::false_type) {
-		
+	typename list<T, Allocator>::iterator list<T, Allocator>::insert_base(const_iterator pos, InputIt first, InputIt last, std::false_type) {	
 		auto it = last;
 		iterator pos1 = pos;
 		iterator pos2;
@@ -770,19 +836,28 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	typename list<T, Allocator>::iterator list<T, Allocator>::insert_node(const_iterator pos, const value_type& value) {
-		ptr_node insert_node = allocate(1);
+		ptr_node insert_node = allocate();
 		node n;
 		n.data = value;
 		uninitialized_fill_n(insert_node, 1, n);
 
 		ptr_node p_pos = pos.data();
 		ptr_node pre_p_pos = p_pos->prev;
-		pre_p_pos->next = insert_node;
-		insert_node->prev = pre_p_pos;
-		insert_node->next = p_pos;
-		p_pos->prev = insert_node;
+		relink(pre_p_pos, insert_node);
+		relink(insert_node, p_pos);
 
 		return iterator(insert_node);
+	}
+
+	template<class T, class Allocator>
+	typename list<T, Allocator>::iterator list<T, Allocator>::delete_node(iterator pos) {
+		ptr_node p = pos.data();
+		ptr_node pre = p->prev;
+		ptr_node post = p->next;
+		destory(p);
+		deallocate(p);
+		relink(pre, post);
+		return iterator(post);
 	}
 
 	template<class T, class Allocator>
@@ -791,9 +866,76 @@ namespace d_stl {
 		ptr_node post = p->next;
 		destory(p);
 		deallocate(p);
-		pre->next = post;
-		post->prev = pre;
+		relink(pre, post);
 	}
+
+	template<class T, class Allocator>
+	template<class Compare>
+	typename list<T, Allocator>::ptr_node list<T, Allocator>::merge_sort(ptr_node first, Compare comp) {
+		if (first->next == nullptr) {
+			return first;
+		}
+
+		ptr_node slow = first;
+		ptr_node fast = first;
+		//find the middle
+		while (fast != nullptr&&fast->next != nullptr) {
+			slow = slow->next;
+			fast = fast->next->next;
+		}
+		//get two child lists
+		slow->prev->next = nullptr;
+		ptr_node first_ptr = merge_sort(first, comp);
+		ptr_node second_ptr = merge_sort(slow, comp);
+		return merge_base(first_ptr, second_ptr, comp);
+	}
+
+	template<class T, class Allocator>
+	template<class Compare>
+	typename list<T, Allocator>::ptr_node list<T, Allocator>::merge_base(ptr_node first1, ptr_node first2, Compare comp) {
+		//end with nullptr, 
+		ptr_node return_ptr;
+		ptr_node tmp;
+		//find the less value  
+		if (comp(first2->data, first1->data)) {
+			ptr_node ptr = first1;
+			first1 = first2;
+			first2 = ptr;
+		}
+		return_ptr = first1;
+		tmp = first1;
+		first1 = first1->next;
+
+		//bidirectional
+		while (first1 != nullptr && first2 != nullptr) {
+			if (comp(first2->data, first1->data)) {
+				relink(tmp, first2);
+				tmp = tmp->next;
+				first2 = first2->next;
+			}
+			else {
+				relink(tmp, first1);
+				tmp = tmp->next;
+				first1 = first1->next;
+			}
+		}
+		if (first1 != nullptr) {
+			relink(tmp, first1);
+		}
+		if (first2 != nullptr) {
+			relink(tmp, first2);
+		}
+
+		return return_ptr;
+	}
+
+	template<class T, class Allocator>
+	void list<T, Allocator>::relink(ptr_node first, ptr_node last) {
+		first->next = last;
+		last->prev = first;
+	}
+
+
 
 	template<class T, class Allocator = d_stl::allocator<T>>
 	bool operator==(const list<T, Allocator>& lhs, const list<T, Allocator>& rhs) {
@@ -1027,10 +1169,8 @@ namespace d_stl {
 		iterator delete_node(iterator pos);
 		void delete_node(ptr_node p);
 
-		ptr_node merge_sort(ptr_node first);
 		template<class Compare>
 		ptr_node merge_sort(ptr_node first, Compare comp);
-		ptr_node merge_base(ptr_node first1, ptr_node first2);
 		template<class Compare>
 		ptr_node merge_base(ptr_node first1, ptr_node first2, Compare comp);
 
@@ -1280,36 +1420,6 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::merge(list& other) {
-		/*
-		//should't write again
-		//should reuse merge_base
-
-		if (other.empty()) {
-			return;
-		}
-		ptr_node other_current = other.end().data();
-		if (empty()) {
-			ptr_node tmp = other_current;
-			other_current = current;
-			current = tmp;
-			return;
-		}
-		
-		ptr_node first1 = current->next;
-		current->prev->next = nullptr;
-		ptr_node first2 = other_current->next;
-		other_current->prev->next = nullptr;
-
-		first1 = merge_base(first1, first2);
-		ptr_node last1 = first1;
-		while (last1->next != nullptr) {
-			last1 = last1->next;
-		}
-
-		relink(current, first1);
-		relink(last1, current);
-		relink(other_current, other_current);
-		*/
 		auto less = [](const value_type& lhs, const value_type& rhs) {
 			return lhs < rhs;
 		};
@@ -1318,33 +1428,6 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::merge(list&& other) {
-		/*
-		if (other.empty()) {
-			return;
-		}
-		ptr_node other_current = other.end().data();
-		if (empty()) {
-			ptr_node tmp = other_current;
-			other_current = current;
-			current = tmp;
-			return;
-		}
-
-		ptr_node first1 = current->next;
-		current->prev->next = nullptr;
-		ptr_node first2 = other_current->next;
-		other_current->prev->next = nullptr;
-
-		first1 = merge_base(first1, first2);
-		ptr_node last1 = first1;
-		while (last1->next != nullptr) {
-			last1 = last1->next;
-		}
-
-		relink(current, first1);
-		relink(last1, current);
-		relink(other_current, other_current);
-		*/
 		auto less = [](const value_type& lhs, const value_type& rhs) {
 			return lhs < rhs;
 		};
@@ -1416,18 +1499,6 @@ namespace d_stl {
 		if (other.empty()) {
 			return;
 		}
-		/*
-		ptr_node pos_ptr = pos.data();
-		ptr_node first_ptr = other.begin().data();
-		ptr_node last_ptr = other.end().data();
-		pos_ptr->prev->next = first_ptr;
-		first_ptr->prev = pos_ptr->prev;
-		last_ptr->prev->next = pos_ptr;
-		pos_ptr->prev = last_ptr->prev;
-		//make other empty
-		last_ptr->prev = last_ptr;
-		last_ptr->next = last_ptr;
-		*/
 		const_iterator first = other.cbegin();
 		const_iterator last = other.cend();
 		splice(pos, other, first, last);
@@ -1438,18 +1509,6 @@ namespace d_stl {
 		if (other.empty()) {
 			return;
 		}
-		/*
-		ptr_node pos_ptr = pos.data();
-		ptr_node first_ptr = other.begin().data();
-		ptr_node last_ptr = other.end().data();
-		pos_ptr->prev->next = first_ptr;
-		first_ptr->prev = pos_ptr->prev;
-		last_ptr->prev->next = pos_ptr;
-		pos_ptr->prev = last_ptr->prev;
-		//make other empty
-		last_ptr->prev = last_ptr;
-		last_ptr->next = last_ptr;
-		*/
 		const_iterator first = other.cbegin();
 		const_iterator last = other.cend();
 		splice(pos, other, first, last);
@@ -1457,18 +1516,6 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::splice(const_iterator pos, list& other, const_iterator it) {
-		/*
-		ptr_node pos_ptr = pos.data();
-		ptr_node it_ptr = it.data();
-		//re_link in other
-		it_ptr->prev->next = it_ptr->next;
-		it_ptr->next->prev = it_ptr->prev;
-		//"insert"
-		pos_ptr->prev->next = it_ptr;
-		it_ptr->prev = pos_ptr->prev;
-		it_ptr->next = pos_ptr;
-		pos_ptr->prev = it_ptr;
-		*/
 		const_iterator first = it;
 		ptr_node it_ptr = it.data();
 		const_iterator last = const_iterator(it_ptr->next);
@@ -1477,18 +1524,6 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::splice(const_iterator pos, list&& other, const_iterator it) {
-		/*
-		ptr_node pos_ptr = pos.data();
-		ptr_node it_ptr = it.data();
-		//re_link in other
-		it_ptr->prev->next = it_ptr->next;
-		it_ptr->next->prev = it_ptr->prev;
-		//"insert"
-		pos_ptr->prev->next = it_ptr;
-		it_ptr->prev = pos_ptr->prev;
-		it_ptr->next = pos_ptr;
-		pos_ptr->prev = it_ptr;
-		*/
 		const_iterator first = it;
 		ptr_node it_ptr = it.data();
 		const_iterator last = const_iterator(it_ptr->next);
@@ -1590,19 +1625,10 @@ namespace d_stl {
 
 	template<class T>
 	void list<T>::sort() {
-		if (empty()) {
-			return;
-		}
-		ptr_node first = current->next;
-		current->prev->next = nullptr;
-
-		first = merge_sort(first);
-		ptr_node last = first;
-		while (last->next != nullptr) {
-			last = last->next;
-		}
-		relink(current, first);
-		relink(last, current);
+		auto less = [](const value_type& lhs, const value_type& rhs) {
+			return lhs < rhs;
+		};
+		sort(less);
 	}
 
 	template<class T>
@@ -1706,26 +1732,6 @@ namespace d_stl {
 	}
 
 	template<class T>
-	typename list<T>::ptr_node list<T>::merge_sort(ptr_node first) {
-		if (first->next == nullptr) {
-			return first;
-		}
-
-		ptr_node slow = first;
-		ptr_node fast = first;
-		//find the middle
-		while (fast != nullptr&&fast->next != nullptr) {
-			slow = slow->next;
-			fast = fast->next->next;
-		}
-		//get two child lists
-		slow->prev->next = nullptr;
-		ptr_node first_ptr = merge_sort(first);
-		ptr_node second_ptr = merge_sort(slow);
-		return merge_base(first_ptr, second_ptr);
-	}
-
-	template<class T>
 	template<class Compare>
 	typename list<T>::ptr_node list<T>::merge_sort(ptr_node first, Compare comp) {
 		if (first->next == nullptr) {
@@ -1744,44 +1750,6 @@ namespace d_stl {
 		ptr_node first_ptr = merge_sort(first, comp);
 		ptr_node second_ptr = merge_sort(slow, comp);
 		return merge_base(first_ptr, second_ptr, comp);
-	}
-
-	template<class T>
-	typename list<T>::ptr_node list<T>::merge_base(ptr_node first1, ptr_node first2) {
-		//end with nullptr, 
-		ptr_node return_ptr;
-		ptr_node tmp;
-		//find the less value  
-		if (first2->data < first1->data) {
-			ptr_node ptr = first1;
-			first1 = first2;
-			first2 = ptr;
-		}
-		return_ptr = first1;
-		tmp = first1;
-		first1 = first1->next;
-		
-		//bidirectional
-		while (first1 != nullptr && first2 != nullptr) {
-			if (first2->data < first1->data) {
-				relink(tmp, first2);
-				tmp = tmp->next;
-				first2 = first2->next;	
-			}
-			else {
-				relink(tmp, first1);
-				tmp = tmp->next;
-				first1 = first1->next;
-			}
-		}
-		if (first1 != nullptr) {
-			relink(tmp, first1);
-		}
-		if (first2 != nullptr) {
-			relink(tmp, first2);
-		}
-
-		return return_ptr;
 	}
 
 	template<class T>

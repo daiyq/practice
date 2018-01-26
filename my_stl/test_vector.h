@@ -226,6 +226,17 @@ namespace d_stl {
 		printer_containter(my_vector_1, s_vector_1);
 		assert(equal_containter(my_vector_1, s_vector_1));
 
+		auto my_pos9 = my_vector_1.begin();
+		auto s_pos9 = s_vector_1.begin();
+		my_pos9++;
+		my_pos9++;
+		s_pos9++;
+		s_pos9++;
+		my_vector_1.insert(my_pos9, { 3,6,9,14,32,34,67,54,9,0,1,3 });
+		s_vector_1.insert(s_pos9, { 3,6,9,14,32,34,67,54,9,0,1,3 });
+		printer_containter(my_vector_1, s_vector_1);
+		assert(equal_containter(my_vector_1, s_vector_1));
+
 		int lvalue7 = 7;
 		my_vector_1.push_back(lvalue7);
 		s_vector_1.push_back(lvalue7);
