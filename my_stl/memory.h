@@ -15,13 +15,13 @@ namespace d_stl {
 	class allocator
 	{
 	public:
-		typedef T value_type;
-		typedef T* pointer;
-		typedef const T* const_pointer;
-		typedef T& reference;
-		typedef const T& const_reference;
-		typedef std::size_t size_type;
-		typedef std::ptrdiff_t difference_type;
+		using value_type = T;
+		using size_type = std::size_t;
+		using difference_type = std::ptrdiff_t;
+		using reference = value_type&;
+		using const_reference = const value_type&;
+		using pointer = value_type*;
+		using const_pointer = const value_type*;
 
 	public:
 		static T* allocate(std::size_t n);

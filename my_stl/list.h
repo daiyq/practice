@@ -116,8 +116,10 @@ namespace d_stl {
 		using difference_type = std::ptrdiff_t;
 		using reference = value_type&;
 		using const_reference = const value_type&;
-		using pointer = value_type*;
-		using const_pointer = const value_type*;
+		//using pointer = value_type*;
+		//using const_pointer = const value_type*;
+		using pointer = ListNode<T>*;
+		using const_pointer = const ListNode<T>*;
 		using iterator = ListIterator<T>;
 		using const_iterator = const ListIterator<T>;
 		using reverse_iterator = d_stl::reverse_iterator<iterator>;
