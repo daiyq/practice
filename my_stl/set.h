@@ -21,8 +21,10 @@ namespace d_stl {
 		using value_compare = Compare;
 		using reference = value_type&;
 		using const_reference = const value_type&;
-		using pointer = rb_tree_node<Key>*;
-		using const_pointer = const rb_tree_node<Key>*;
+		using pointer = value_type*;
+		using const_pointer = const value_type*;
+		//using pointer = rb_tree_node<Key>*;
+		//using const_pointer = const rb_tree_node<Key>*;
 
 		using iterator = const rb_tree_iterator<value_type>;
 		using const_iterator = const rb_tree_iterator<value_type>;
