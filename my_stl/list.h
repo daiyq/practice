@@ -16,35 +16,35 @@
 namespace d_stl {
 
 	template<class T>
-	class ListNode {
+	class list_node {
 	public:
-		using ptr_node = ListNode<T>*;
+		using ptr_node = list_node<T>*;
 		ptr_node prev;
 		ptr_node next;
 		T data;
 	};
 
 	template<class ListItem>
-	class ListIterator :public d_stl::bidirectional_iterator<ListItem, std::ptrdiff_t> {
+	class list_iterator :public d_stl::bidirectional_iterator<ListItem, std::ptrdiff_t> {
 	public:
 		using iterator_category = bidirectional_iterator_tag;
 		using value_type = ListItem;
 		using difference_type = std::ptrdiff_t;
 		using pointer = ListItem*;
 		using reference = ListItem&;
-		using self = ListIterator<ListItem>;
-		using node = ListNode<ListItem>;
+		using self = list_iterator<ListItem>;
+		using node = list_node<ListItem>;
 		using ptr_node = node*;
 
 	private:
 		ptr_node current;
 
 	public:
-		ListIterator() :current(nullptr) {
+		list_iterator() :current(nullptr) {
 		}
-		ListIterator(const ptr_node& item) :current(item) {
+		list_iterator(const ptr_node& item) :current(item) {
 		}
-		ListIterator(const self& it) :current(it.current) {
+		list_iterator(const self& it) :current(it.current) {
 		}
 
 		bool operator==(const self& other) const {
@@ -60,7 +60,7 @@ namespace d_stl {
 
 		self& operator=(const self& other) {
 			if (this != &other) {
-				current = other.current;
+				current = other.data();
 			}
 			return *this;
 		}
@@ -96,19 +96,19 @@ namespace d_stl {
 	};
 
 	template<class ListItem>
-	bool operator==(const ListIterator<ListItem>& lhs, const ListIterator<ListItem>& rhs) {
+	bool operator==(const list_iterator<ListItem>& lhs, const list_iterator<ListItem>& rhs) {
 		return (lhs.current == rhs.current);
 	}
 
 	template<class ListItem>
-	bool operator!=(const ListIterator<ListItem>& lhs, const ListIterator<ListItem>& rhs) {
+	bool operator!=(const list_iterator<ListItem>& lhs, const list_iterator<ListItem>& rhs) {
 		return (lhs.current != rhs.current);
 	}
 
 #define LIST_ALLOCATOR_
 #ifdef LIST_ALLOCATOR_
 
-	template<class T, class Allocator=d_stl::allocator<ListNode<T>>>
+	template<class T, class Allocator=d_stl::allocator<list_node<T>>>
 	class list {
 	public:
 		using value_type = T;
@@ -118,14 +118,14 @@ namespace d_stl {
 		using const_reference = const value_type&;
 		//using pointer = value_type*;
 		//using const_pointer = const value_type*;
-		using pointer = ListNode<T>*;
-		using const_pointer = const ListNode<T>*;
-		using iterator = ListIterator<T>;
-		using const_iterator = const ListIterator<T>;
+		using pointer = list_node<T>*;
+		using const_pointer = const list_node<T>*;
+		using iterator = list_iterator<T>;
+		using const_iterator = const list_iterator<T>;
 		using reverse_iterator = d_stl::reverse_iterator<iterator>;
 		using const_reverse_iterator = d_stl::reverse_iterator<const_iterator>;
-		using node = ListNode<T>;
-		using ptr_node = ListNode<T>*;
+		using node = list_node<T>;
+		using ptr_node = list_node<T>*;
 		using data_alloc = Allocator;
 
 	private:
@@ -228,7 +228,7 @@ namespace d_stl {
 		iterator insert(const_iterator pos, size_type count, const value_type& value);
 		template<class InputIt>
 		iterator insert(const_iterator pos, InputIt first, InputIt last);
-		iterator insert(const_iterator pos, std::initializer_list<T> ilist);//not finished
+		iterator insert(const_iterator pos, std::initializer_list<T> ilist);
 		iterator erase(const_iterator pos); //return the following removed element
 		iterator erase(const_iterator first, const_iterator last);
 		void push_back(const value_type& value);
