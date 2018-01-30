@@ -126,7 +126,7 @@ namespace d_stl {
 		}
 	}
 
-	template<class Key, class Value, class Compare = std::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
+	template<class Key, class Value, class KeyOfValue, class Compare = std::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
 	class rb_tree {
 	public:
 		using key_type = Key;
@@ -167,13 +167,14 @@ namespace d_stl {
 	private:
 		//use of header:
 		//use it as border checking node
-		//header's parent is root
 		//root's parent is header
+		//header's parent is nullptr
 		//and header's left and right are itself
 		ptr_node header;
 
 	private:
 		ptr_node creat_node();
+		ptr_node creat_node(const value_type& value);
 		ptr_node copy_node(ptr_node p);
 		void delete_node(ptr_node p);
 		void initialize();
@@ -183,6 +184,8 @@ namespace d_stl {
 		ptr_node find_base(ptr_node p, const key_type& key);
 		ptr_node insert_base(ptr_node p, key_type key, value_type value);
 		ptr_node erase_base(ptr_node p, key_type key);
+
+		size_type size_base(ptr_node p);
 
 		ptr_node erase_min(ptr_node p);
 		ptr_node erase_max(ptr_node p);
@@ -196,38 +199,38 @@ namespace d_stl {
 
 	};
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::rb_tree() {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::rb_tree() {
 		initialize();
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::rb_tree(const rb_tree& other) {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::rb_tree(const rb_tree& other) {
 
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::rb_tree(rb_tree&& other) {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::rb_tree(rb_tree&& other) {
 		if (this != &other) {
 			header = other.header;
 			other.header = nullptr;
 		}
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::~rb_tree() {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::~rb_tree() {
 
 	}
 
 	//copy and swap
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>& rb_tree<Key, Value, Compare, Allocator>::operator=(rb_tree other) {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>& rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::operator=(rb_tree other) {
 		swap(other);
 		return *this;
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::iterator rb_tree<Key, Value, Compare, Allocator>::begin() {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::iterator rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::begin() {
 		if (empty()) {
 			return end();
 		}
@@ -238,14 +241,14 @@ namespace d_stl {
 		return iterator(root);
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::iterator rb_tree<Key, Value, Compare, Allocator>::end() {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::iterator rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::end() {
 		return iterator(header);
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	bool rb_tree<Key, Value, Compare, Allocator>::empty() {
-		if (header->parent == header) {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	bool rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::empty() {
+		if (header->parent == nullptr) {
 			return true;
 		}
 		else {
@@ -253,103 +256,152 @@ namespace d_stl {
 		}
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::size_type rb_tree<Key, Value, Compare, Allocator>::size() {
-	
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::size_type rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::size() {
+		if (empty()) {
+			return 0;
+		}
+		else {
+			return size_base(header->parent);
+		}
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::ptr_node rb_tree<Key, Value, Compare, Allocator>::find(const key_type& key) {
-	
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::find(const key_type& key) {
+		find_base(header->parent, key);
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	void rb_tree<Key, Value, Compare, Allocator>::insert(const value_type& value) {
-	
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::insert(const value_type& value) {
+		
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	void rb_tree<Key, Value, Compare, Allocator>::erase(const key_type& key) {
-
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::erase(const key_type& key) {
+		if (find(key) == nullptr) {
+		}
+		else {
+			erase_base(header->parent, key);
+		}
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	void rb_tree<Key, Value, Compare, Allocator>::swap(rb_tree& other) {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::swap(rb_tree& other) {
 
 	}
 
 	//private function
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::ptr_node rb_tree<Key, Value, Compare, Allocator>::creat_node() {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::creat_node() {
+		return creat_node(value_type());
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::creat_node(const value_type& value) {
+		ptr_node creat_node = data_alloc::allocate(1);
+		node n;
+		n.value = value;
+		uninitialized_fill_n(creat_node, 1, n);
+		return creat_node;
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::copy_node(ptr_node p) {
+		return creat_node(p->value);
+	}
+
+	//for delete one node every time,
+	//so not worry the memory, it would be sized as when allocated
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::delete_node(ptr_node p) {
+		data_alloc::destory(p);
+		data_alloc::deallocate(p, 1);
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::initialize() {
+		header = creat_node();
+		header->left = header;
+		header->right = header;
+		header->parent = nullptr;
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::clean() {
 	
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::ptr_node rb_tree<Key, Value, Compare, Allocator>::copy_node(ptr_node p) {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::find_base(ptr_node p, const key_type& key) {
+		if (p == nullptr) {
+			return nullptr
+		}
+		//equal???
+		else if (!Compare()(key, KeyOfValue()(p->value)) && !Compare()(KeyOfValue()(p->value), key)) {
+			return p;
+		}
+		//less
+		else if (Compare()(KeyOfValue()(p->value), key)) {
+			return p->left;
+		}
+		else {
+			return p->right;
+		}
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::insert_base(ptr_node p, key_type key, value_type value) {
 	
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	void rb_tree<Key, Value, Compare, Allocator>::delete_node(ptr_node p) {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::erase_base(ptr_node p, key_type key) {
 	
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	void rb_tree<Key, Value, Compare, Allocator>::initialize() {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::size_type rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::size_base(ptr_node p) {
+		if (p == nullptr) {
+			return 0;
+		}
+		else {
+			return size_base(p->left) + size_base(p->right) + 1;
+		}
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	void rb_tree<Key, Value, Compare, Allocator>::clean() {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::erase_min(ptr_node p) {
 	
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::ptr_node rb_tree<Key, Value, Compare, Allocator>::find_base(ptr_node p, const key_type& key) {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::erase_max(ptr_node p) {
 	
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::ptr_node rb_tree<Key, Value, Compare, Allocator>::insert_base(ptr_node p, key_type key, value_type value) {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::balance(ptr_node p) {
 	
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::ptr_node rb_tree<Key, Value, Compare, Allocator>::erase_base(ptr_node p, key_type key) {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::rotate_left(ptr_node p) {
 	
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::ptr_node rb_tree<Key, Value, Compare, Allocator>::erase_min(ptr_node p) {
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::rotate_right(ptr_node p) {
 	
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::ptr_node rb_tree<Key, Value, Compare, Allocator>::erase_max(ptr_node p) {
-	
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::flip_color(ptr_node p) {
+
 	}
 
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::ptr_node rb_tree<Key, Value, Compare, Allocator>::balance(ptr_node p) {
-	
-	}
-
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::ptr_node rb_tree<Key, Value, Compare, Allocator>::rotate_left(ptr_node p) {
-	
-	}
-
-	template<class Key, class Value, class Compare, class Allocator>
-	rb_tree<Key, Value, Compare, Allocator>::ptr_node rb_tree<Key, Value, Compare, Allocator>::rotate_right(ptr_node p) {
-	
-	}
-
-	template<class Key, class Value, class Compare, class Allocator>
-	void rb_tree<Key, Value, Compare, Allocator>::flip_color(ptr_node p) {
-	}
-
-	template<class Key, class Value, class Compare, class Allocator>
-	void rb_tree<Key, Value, Compare, Allocator>::root_normalize() {
-
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::root_normalize() {
+		header->parent->color = re_tree_node_black;
 	}
 }
 #endif 

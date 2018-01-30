@@ -3,6 +3,8 @@
 
 #include "test_vector.h"
 #include "test_list.h"
+#include <functional>
+#include <iostream>
 
 namespace d_stl {
 
@@ -36,6 +38,14 @@ namespace d_stl {
 		printer_containter(s_list_7, s_list_7);
 		assert(equal_containter(s_list_7, s_list_7));
 		*/
+		
+		using f = std::less<int>;
+		
+		std::cout << f()(5, 20) << '\n';
+		std::cout << f()(100, 10) << '\n';
+		std::cout << f()(5, 5) << '\n';
+		std::cout << f()(100, 100) << '\n';
+		
 	}
 
 	void test() {
