@@ -3,7 +3,7 @@
 
 #include "iterator.h"
 #include "memory.h"
-#include <functional> //std::less<>
+#include "functional.h" //std::less<>
 
 namespace d_stl {
 
@@ -126,7 +126,7 @@ namespace d_stl {
 		}
 	}
 
-	template<class Key, class Value, class KeyOfValue, class Compare = std::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
+	template<class Key, class Value, class KeyOfValue, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
 	class rb_tree {
 	public:
 		using key_type = Key;
@@ -403,5 +403,6 @@ namespace d_stl {
 	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::root_normalize() {
 		header->parent->color = re_tree_node_black;
 	}
+
 }
 #endif 
