@@ -149,7 +149,7 @@ namespace d_stl {
 		size_type capacity() const noexcept {
 			return stroage_ - begin_;
 		}
-		void shrink_to_fit(); //removed unused capacity 
+		void shrink_to_fit(); //removed unused capacity. useless?? where to use? and difficult to inplement
 
 		//Modifiers
 		void clear();
@@ -322,10 +322,8 @@ namespace d_stl {
 	template<class T, class Allocator>
 	void vector<T, Allocator>::shrink_to_fit() {
 		/*
-		deallocate(end_, stroage_ - end_);
 		*/
 		//to  be normailzed 
-		stroage_ = end_;
 	}
 
 	template<class T, class Allocator>
@@ -473,8 +471,8 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::erase(const_iterator first, const_iterator last) {
-		size_type count = static_cast<size_type>(std::distance(first, last));
-		size_type dis = static_cast<size_type>(std::distance(cbegin(), first));
+		size_type count = static_cast<size_type>(distance(first, last));
+		size_type dis = static_cast<size_type>(distance(cbegin(), first));
 		if (first == last) {
 			return (begin_ + dis);
 		}
@@ -620,6 +618,8 @@ namespace d_stl {
 	template<class InputIt>
 	void vector<T, Allocator>::vector_base(InputIt first, InputIt last, std::false_type) {
 		//std::printf("Iterator\n");
+		//if first and last are not initialized, will not work
+
 		size_type count = static_cast<size_type>(std::distance(first, last));
 		ininitialized(count);
 		uninitialized_copy(first, last, begin_);
@@ -653,7 +653,7 @@ namespace d_stl {
 
 	template<class T, class Allocator>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert_base(const_iterator pos, size_type count, const value_type& value, std::true_type) {
-		size_type dis = static_cast<size_type>(std::distance(cbegin(), pos));
+		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
 		size_type left_size = capacity() - size();
 		if (count > left_size) {
 			size_type new_size = size() > count ? 2 * size() : 2 * count;
@@ -691,7 +691,7 @@ namespace d_stl {
 	template<class T, class Allocator>
 	template<class InputIt>
 	typename vector<T, Allocator>::iterator vector<T, Allocator>::insert_base(const_iterator pos, InputIt first, InputIt last, std::false_type) {
-		size_type dis = static_cast<size_type>(std::distance(cbegin(), pos));
+		size_type dis = static_cast<size_type>(distance(cbegin(), pos));
 		size_type count = static_cast<size_type>(std::distance(first, last));
 		size_type left_size = capacity() - size();
 		if (count > left_size) {
