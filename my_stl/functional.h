@@ -9,6 +9,9 @@ namespace d_stl {
 		using first_type = T1;
 		using second_type = T2;
 
+		pair(const T1& lhs, const T2& rhs) :first(lhs), second(rhs) {
+		}
+
 		first_type first;
 		second_type second;
 	};
@@ -21,7 +24,6 @@ namespace d_stl {
 		}
 	};
 
-	
 	template<class T1, class T2>
 	class identify<pair<T1, T2>> {
 	public:
