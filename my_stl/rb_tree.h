@@ -131,6 +131,8 @@ namespace d_stl {
 	template<class Key, class Value, class KeyOfValue = d_stl::identify<Value>, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
 	void swap(rb_tree<Key, Value, KeyOfValue, Compare, Allocator>& lhs, rb_tree<Key, Value, KeyOfValue, Compare, Allocator>& rhs);
 
+	//rb_tree
+	//red_node is left node
 	template<class Key, class Value, class KeyOfValue = d_stl::identify<Value>, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
 	class rb_tree {
 	public:
@@ -165,7 +167,11 @@ namespace d_stl {
 
 		ptr_node find(const key_type& key);
 		void insert(const value_type& value);
+		void erase_min();
+		void erase_max();
 		void erase(const key_type& key);
+
+		ptr_node data();
 
 		void swap(rb_tree& other);
 
@@ -182,20 +188,22 @@ namespace d_stl {
 		ptr_node creat_node();
 		ptr_node creat_node(const value_type& value);
 		ptr_node copy_node(ptr_node p);
+		ptr_node copy_tree(ptr_node p_parent, ptr_node source);
 		void delete_node(ptr_node p);
 		void initialize();
-
-		void clean();
+		void clean_tree(ptr_node p);
 
 		ptr_node find_base(ptr_node p, const key_type& key);
-		ptr_node insert_base(ptr_node p, const value_type& value);
+		ptr_node insert_base(ptr_node p, ptr_node p_parent, const value_type& value);
+		ptr_node erase_min_base(ptr_node p);
+		ptr_node erase_max_base(ptr_node p);
 		ptr_node erase_base(ptr_node p, key_type key);
 
+		ptr_node min(ptr_node p);
+		ptr_node max(ptr_node p);
 		size_type size_base(ptr_node p);
 
-		ptr_node erase_min(ptr_node p);
-		ptr_node erase_max(ptr_node p);
-
+		//re_balance after erase
 		ptr_node balance(ptr_node p);
 
 		bool is_red(ptr_node p) {
@@ -205,10 +213,15 @@ namespace d_stl {
 			return p->color == re_tree_node_red;
 		}
 
+		//used in insert
 		//deal with the parent ptr_node
 		ptr_node rotate_left(ptr_node p);
 		ptr_node rotate_right(ptr_node p);
 		void flip_color(ptr_node p);
+
+		//used in erase
+		ptr_node move_red_left(ptr_node p);
+		ptr_node move_red_right(ptr_node p);
 
 	};
 
@@ -219,7 +232,8 @@ namespace d_stl {
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::rb_tree(const rb_tree& other) {
-
+		initialize();
+		copy_tree(header, other.data());
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
@@ -232,7 +246,8 @@ namespace d_stl {
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::~rb_tree() {
-
+		clean_tree(header->parent);
+		delete_node(header);
 	}
 
 	//copy and swap
@@ -249,11 +264,7 @@ namespace d_stl {
 		if (empty()) {
 			return end();
 		}
-		ptr_node root = header->parent;
-		while (root->left != nullptr) {
-			root = root->left;
-		}
-		return iterator(root);
+		return iterator(min(header->parent));
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
@@ -291,17 +302,59 @@ namespace d_stl {
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::insert(const value_type& value) {
-		insert_base(header->parent, KeyOfValue()(value), value);
+		insert_base(header->parent, header, KeyOfValue()(value), value);
 		header->parent->color = re_tree_node_black;
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
-	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::erase(const key_type& key) {
-		
-		erase_base(header->parent, key);
+	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::erase_min() {
+		if (empty()) {
+			return;
+		}
+		if (!is_red(header->parent->left) && !is_red(header->parent->right)) {
+			header->parent->color = re_tree_node_red;
+		}
+		header->parent = erase_min_base(header->parent);
 		if (!empty()) {
 			header->parent->color = re_tree_node_black;
 		}
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::erase_max() {
+		if (empty()) {
+			return;
+		}
+		if (!is_red(header->parent->left) && !is_red(header->parent->right)) {
+			header->parent->color = re_tree_node_red;
+		}
+		header->parent = erase_max_base(header->parent);
+		if (!empty()) {
+			header->parent->color = re_tree_node_black;
+		}
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::erase(const key_type& key) {
+		if (empty()) {
+			return;
+		}
+		if (find(key) == nullptr) {
+			return;
+		}
+		if (!is_red(header->parent->left) && !is_red(header->parent->right)) {
+			header->parent->color = re_tree_node_red;
+		}
+		header->parent = erase_base(header->parent, key);
+		if (!empty()) {
+			header->parent->color = re_tree_node_black;
+		}
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		data() {
+		return header->parent;
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
@@ -325,6 +378,8 @@ namespace d_stl {
 		node n;
 		n.value = value;
 		n.color = re_tree_node_red;
+		n.left = nullptr;
+		n.right = nullptr;
 		uninitialized_fill_n(creat_node, 1, n);
 		return creat_node;
 	}
@@ -338,6 +393,19 @@ namespace d_stl {
 		n.color = p->color;
 		uninitialized_fill_n(creat_node, 1, n);
 		return creat_node;
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		copy_tree(ptr_node p_parent, ptr_node source) {
+		if (source == nullptr) {
+			return;
+		}
+		ptr_node x = copy_node(source);
+		x->parent = p_parent;
+		x->left = copy_tree(x, source->left);
+		x->right = copy_tree(x, source->right);
+		return x;
 	}
 
 	//for delete one node every time,
@@ -357,8 +425,15 @@ namespace d_stl {
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
-	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::clean() {
-		
+	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::clean_tree(ptr_node p) {
+		if (p == nullptr) {
+			return;
+		}
+		else {
+			clean_tree(p->left);
+			clean_tree(p->right);
+			delete_node(p);
+		}
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
@@ -382,9 +457,11 @@ namespace d_stl {
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
-		insert_base(ptr_node p, const value_type& value) {
+		insert_base(ptr_node p, ptr_node p_parent, const value_type& value) {
 		if (p == nullptr) {
-			return creat_node(value);
+			ptr_node tmp= creat_node(value);
+			tmp->parent = p_parent;
+			return tmp;
 		}
 
 		//equal
@@ -393,10 +470,10 @@ namespace d_stl {
 		}
 		//less
 		else if (Compare()(KeyOfValue()(value), KeyOfValue()(p->value))) {
-			return insert_base(p->left, value);
+			p->left = insert_base(p->left, p, value);
 		}
 		else {
-			return insert_base(p->right, value);
+			p->right = insert_base(p->right, p, value);
 		}
 
 		if (is_red(p->right) && !is_red(p->left)) {
@@ -406,15 +483,107 @@ namespace d_stl {
 			p = rotate_right(p);
 		}
 		if (is_red(p->right) && is_red(p->left)) {
-			flip_color(p);
+			flip_color_insert(p);
+		}
+
+		return p;
+	}
+
+	//just make the node to be erased red, and diectedly erase
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		erase_min_base(ptr_node p) {
+		if (p->left == nullptr) {
+			//for there is impossible that its left child is nullptr,
+			//but its right child is not nullptr
+			//No possiblity!!
+			delete_node(p);
+			return nullptr;
+		}
+		//so p.left existed
+		//and for the situation:its left is not nullptr(just a node) and its right is nullptr
+		//its left must be red
+		if (!is_red(p->left) && !is_red(p->left->left)) {
+			p = move_red_left(p);
+		}
+		p->left = erase_min(p->left, p);
+		return balance(p);
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		erase_max_base(ptr_node p) {
+		if (is_red(p->left)) {
+			p = rotate_right(p);
+		}
+		if (p->right == nullptr) {
+			return nullptr;
+		}
+		if (!is_red(p->right) && !is_red(p->right->left)) {
+			p = move_red_right(p);
+		}
+		p->right = erase_max_base(p->right);
+		return balance(p);
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		erase_base(ptr_node p, key_type key) {
+		//assert(find(key)!=nullptr)
+		if (Compare()(key, KeyOfValue()(p->value))) {
+			if (!is_red(p->left) && !is_red(p->left->left)) {
+				p = move_red_left(p);
+			}
+			p->left = erase_base(p->left, key);
+		}
+		else {
+			//p.right
+
+			if (is_red(p->left)) {
+				p = rotate_right(p);
+			}
+			//equal, and p.right is nullptr
+			//if p.left is red, it will be checked upper
+			//if p.left is black(not nullptr), no, it can't be,
+			//because p.left's and p.right's distance to root are not equal
+			//so, its left is nullptr
+			//it means the node to be erased is leaf node, so erase directedly
+			if (!Compare()(key, KeyOfValue()(p->value)) && !Compare()(KeyOfValue()(p->value), key) && (p->right == nullptr)) {
+				return nullptr;
+			}
+			if (!is_red(p->right) && !is_red(p->right->left)) {
+				p = move_red_right(p);
+			}
+			//equal
+			//but not the leaf
+			if (!Compare()(key, KeyOfValue()(p->value)) && !Compare()(KeyOfValue()(p->value), key)) {
+				ptr_node x = min(p->right);
+				p->value = x->value;
+				p->right = erase_min_base(p->right);
+			}
+			else {
+				p->right = erase_base(p->right, key);
+			}
+		}
+		return balance(p);
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		min(ptr_node p) {
+		while (p->left != nullptr) {
+			p = p->left;
 		}
 		return p;
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
-		erase_base(ptr_node p, key_type key) {
-	
+		max(ptr_node p) {
+		while (p->right != nullptr) {
+			p = p->right;
+		}
+		return p;
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
@@ -428,22 +597,20 @@ namespace d_stl {
 		}
 	}
 
-	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
-	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
-		erase_min(ptr_node p) {
 	
-	}
-
-	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
-	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
-		erase_max(ptr_node p) {
-	
-	}
-
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
 		balance(ptr_node p) {
-	
+		if (is_red(p->right)) {
+			p = rotate_left(p);
+		}
+		if (is_red(p->left) && is_red(p->left->left)) {
+			p = rotate_right(p);
+		}
+		if (is_red(p->left) && is_red(p->right)) {
+			flip_color_insert(p);
+		}
+		return p;
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
@@ -480,12 +647,39 @@ namespace d_stl {
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::flip_color(ptr_node p) {
-		p->color = re_tree_node_red;
-		p->left->color = re_tree_node_black;
-		p->right->color = re_tree_node_black;
+		p->color = !p->color;
+		p->left->color = !p->left->color;
+		p->right->color = !p->right->color;
 	}
 
-	
+	//used in 2-3 tree
+	//borrow a node from its brother
+	//suppose p is red, p.left and p.left.left are black
+	//make p.left or one of its children red
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		move_red_left(ptr_node p) {
+		flip_color(p);
+		if (is_red(p->right->left)) {
+			p->right = rotate_right(p->right);
+			p = rotate_left(p);
+			flip_color(p);
+		}
+		return p;
+	}
+
+	//suppose p is red, p.right and p.right.left are black
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		move_red_right(ptr_node p) {
+		flip_color(p);
+		if (is_red(p->left->left)) {
+			p = rotate_right(p);
+			flip_color(p);
+		}
+		return p;
+	}
+
 	template<class Key, class Value, class KeyOfValue = d_stl::identify<Value>, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
 	void swap(rb_tree<Key, Value, KeyOfValue, Compare, Allocator>& lhs, rb_tree<Key, Value, KeyOfValue, Compare, Allocator>& rhs) {
 		lhs.swap(rhs);
