@@ -44,7 +44,7 @@ namespace d_stl {
 
 	void test() {
 		casual_test();
-		d_stl::test_case_functional_less();
+		d_stl::test_case_functional();
 		d_stl::test_vector();
 		d_stl::test_list();
 
