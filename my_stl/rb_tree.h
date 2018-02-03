@@ -169,7 +169,6 @@ namespace d_stl {
 		using node = rb_tree_node<Value>;
 		using ptr_node = node*;
 		using data_alloc = Allocator;
-
 		rb_tree();
 		rb_tree(const rb_tree& other);
 		rb_tree(rb_tree&& other);

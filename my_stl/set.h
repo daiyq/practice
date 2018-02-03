@@ -7,7 +7,7 @@
 #include "functional.h"
 //#include <functional> //std::less<>
 #include <initializer_list>
-#include <utility>//pair
+#include <utility>//pair, std::swap
 
 namespace d_stl {
 
@@ -101,7 +101,7 @@ namespace d_stl {
 		iterator insert(value_type&& value);
 		template<class InputIt>
 		void insert(InputIt first, InputIt last);
-		void insert(std::initializer_list<T> ilist);
+		void insert(std::initializer_list<value_type> ilist);
 		//directly construct, and inserted if there is no equal key
 		//which can avoid unnecessary copy or move operations
 		template<class...Args>
@@ -117,8 +117,8 @@ namespace d_stl {
 		const_iterator find(const Key& key) const;
 		//return type whose the first iterator pointing to the first element not less than the key, 
 		//the second iterator pointing to the first element greater than the key
-		std::pair<iterator, iterator> equal_range(const Key& key);
-		std::pair<const_iterator, const_iterator> equal_range(const Key& key) const;
+		pair<iterator, iterator> equal_range(const Key& key);
+		pair<const_iterator, const_iterator> equal_range(const Key& key) const;
 		//the first element that is not less than the key
 		iterator lower_bound(const Key& key);
 		const_iterator lower_bound(const Key& key) const;
@@ -134,6 +134,160 @@ namespace d_stl {
 		
 	};
 	
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::set() {
+
+	}
+
+	template<class Key, class Compare, class Allocator>
+	template<class InputIt>
+	set<Key, Compare, Allocator>::set(InputIt first, Input last) {
+
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::set(const set& other) {
+	
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::set(set&& other) {
+
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::set(std::initializer_list<value_type> ilist) {
+	
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::~set() {
+
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>& set<Key, Compare, Allocator>::operator=(const set& other) {
+	
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>& set<Key, Compare, Allocator>::operator=(set&& other) {
+
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>& set<Key, Compare, Allocator>::operator=(std::initializer_list<value_type> ilist) {
+	
+	}
+
+	template<class Key, class Compare, class Allocator>
+	bool set<Key, Compare, Allocator>::empty() const {
+
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::size_type set<Key, Compare, Allocator>::size() const {
+
+	}
+
+	template<class Key, class Compare, class Allocator>
+	void set<Key, Compare, Allocator>::clear() {
+
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::insert(const value_type& value) {
+
+	}
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::insert(value_type&& value) {
+	
+	}
+
+	template<class Key, class Compare, class Allocator>
+	template<class InputIt>
+	void set<Key, Compare, Allocator>::insert(InputIt first, InputIt last) {
+	
+	}
+
+	template<class Key, class Compare, class Allocator>
+	void set<Key, Compare, Allocator>::insert(std::initializer_list<value_type> ilist) {
+
+	}
+
+	template<class Key, class Compare, class Allocator>
+	template<class...Args>
+	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::emplace(Args&&...args) {
+	
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::erase(const_iterator pos) {
+	
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::erase(const_iterator first, const_iterator last) {
+	
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::size_type set<Key, Compare, Allocator>::erase(const key_type& key) {
+	
+	}
+
+	template<class Key, class Compare, class Allocator>
+	void set<Key, Compare, Allocator>::swap(set& other) {
+
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::size_type set<Key, Compare, Allocator>::count(const Key& key) const {
+	
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::find(const Key& key) {
+	
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::const_iterator set<Key, Compare, Allocator>::find(const Key& key) const {
+	
+	}
+	
+	template<class Key, class Compare, class Allocator>
+	pair<set<Key, Compare, Allocator>::iterator, set<Key, Compare, Allocator>::iterator> set<Key, Compare, Allocator>::
+		equal_range(const Key& key) {
+
+	}
+
+	template<class Key, class Compare, class Allocator>
+	pair<set<Key, Compare, Allocator>::const_iterator, set<Key, Compare, Allocator>::const_iterator> set<Key, Compare, Allocator>::
+		equal_range(const Key& key) const {
+	
+	}
+	
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::lower_bound(const Key& key) {
+	
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::const_iterator set<Key, Compare, Allocator>::lower_bound(const Key& key) const {
+	
+	}
+	
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::upper_bound(const Key& key) {
+	
+	}
+
+	template<class Key, class Compare, class Allocator>
+	set<Key, Compare, Allocator>::const_iterator set<Key, Compare, Allocator>::upper_bound(const Key& key) const {
+	
+	}
+
 
 	template<class Key, class Compare, class Alloc>
 	bool operator==(const set<Key, Compare, Alloc>& lhs, const set<Key, Compare, Alloc>& rhs) {
