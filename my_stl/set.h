@@ -11,6 +11,12 @@
 
 namespace d_stl {
 
+	template<class Key, class Compare = std::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Key>>>
+	class set;
+
+	template<class Key, class Compare = std::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Key>>>
+	void swap(set<Key, Compare, Allocator>& lhs, set<Key, Compare, Allocator>& rhs);
+
 	template<class Key,class Compare=std::less<Key>,class Allocator=d_stl::allocator<rb_tree_node<Key>>>
 	class set {
 	public:
@@ -28,14 +34,13 @@ namespace d_stl {
 		using pointer = rb_tree_node<Key>*;
 		using const_pointer = const rb_tree_node<Key>*;
 
-		using iterator = const rb_tree_iterator<value_type>;
+		using iterator = const rb_tree_iterator<value_type>;//same as rb_tree
 		using const_iterator = const rb_tree_iterator<value_type>;
 		using reverse_iterator = d_stl::reverse_iterator<iterator>;
 		using const_reverse_iterator = d_stl::reverse_iterator<const_iterator>;
 		
 		//member function
 		set();
-		set(const value_type& value);
 		template<class InputIt>
 		set(InputIt first, Input last);
 		set(const set& other);
@@ -49,6 +54,7 @@ namespace d_stl {
 
 		//iterator
 		iterator begin() noexcept {
+
 		}
 		const_iterator begin() const noexcept {
 			
@@ -96,17 +102,21 @@ namespace d_stl {
 		template<class InputIt>
 		void insert(InputIt first, InputIt last);
 		void insert(std::initializer_list<T> ilist);
+		//directly construct, and inserted if there is no equal key
+		//which can avoid unnecessary copy or move operations
 		template<class...Args>
-		iterator emplace(Args&&...args);//directly construct
+		iterator emplace(Args&&...args);
 		iterator erase(const_iterator pos); //return the following removed element
 		iterator erase(const_iterator first, const_iterator last);
-		size_type erase(const key_type& value);
+		size_type erase(const key_type& key);
 		void swap(set& other);
 
 		//lookup
-		size_type count(const Key& key);
+		size_type count(const Key& key) const;
 		iterator find(const Key& key);
 		const_iterator find(const Key& key) const;
+		//return type whose the first iterator pointing to the first element not less than the key, 
+		//the second iterator pointing to the first element greater than the key
 		std::pair<iterator, iterator> equal_range(const Key& key);
 		std::pair<const_iterator, const_iterator> equal_range(const Key& key) const;
 		//the first element that is not less than the key
@@ -116,11 +126,15 @@ namespace d_stl {
 		iterator upper_bound(const Key& key);
 		const_iterator upper_bound(const Key& key) const;
 
+		friend void swap(set<Key, Compare, Allocator>& lhs, set<Key, Compare, Allocator>& rhs);
+
 	private:
 		d_stl::rb_tree<Key, Key, d_stl::identify_set<value_type>, Compare, Allocator> rb_set;
 
+		
 	};
 	
+
 	template<class Key, class Compare, class Alloc>
 	bool operator==(const set<Key, Compare, Alloc>& lhs, const set<Key, Compare, Alloc>& rhs) {
 
@@ -150,5 +164,11 @@ namespace d_stl {
 	bool operator>=(const set<Key, Compare, Alloc>& lhs, const set<Key, Compare, Alloc>& rhs) {
 
 	}
+
+	template<class Key, class Compare = std::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Key>>>
+	void swap(set<Key, Compare, Allocator>& lhs, set<Key, Compare, Allocator>& rhs) {
+		lhs.swap(rhs);
+	}
+
 }
 #endif 

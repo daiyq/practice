@@ -89,7 +89,16 @@ namespace d_stl {
 
 	template<class Value>
 	void rb_tree_iterator<Value>::precursor() {
-		if (current->left != nullptr) {
+		//the header node, its precursor is min()
+		if (current->left == current&&current->right == current) {
+			if (current->parent != nullptr) {
+				current = current->parent;
+				while (current->right != nullptr) {
+					current = current->right;
+				}
+			}
+		}
+		else if (current->left != nullptr) {
 			current = current->left;
 			while (current->right != nullptr) {
 				current = current->right;
@@ -108,7 +117,16 @@ namespace d_stl {
 
 	template<class Value>
 	void rb_tree_iterator<Value>::successor() {
-		if (current->right != nullptr) {
+		//the header node, its successor is min()
+		if (current->left == current&&current->right == current) {
+			if (current->parent != nullptr) {
+				current = current->parent;
+				while (current->left != nullptr) {
+					current = current->left;
+				}
+			}
+		}
+		else if (current->right != nullptr) {
 			current = current->right;
 			while (current->left != nullptr) {
 				current = current->left;
@@ -125,10 +143,10 @@ namespace d_stl {
 		}
 	}
 
-	template<class Key, class Value, class KeyOfValue = d_stl::identify_map<Value>, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
+	template<class Key, class Value, class KeyOfValue, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
 	class rb_tree;
 
-	template<class Key, class Value, class KeyOfValue = d_stl::identify_map<Value>, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
+	template<class Key, class Value, class KeyOfValue, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
 	void swap(rb_tree<Key, Value, KeyOfValue, Compare, Allocator>& lhs, rb_tree<Key, Value, KeyOfValue, Compare, Allocator>& rhs);
 
 	//rb_tree
@@ -172,6 +190,7 @@ namespace d_stl {
 		void erase(const key_type& key);
 
 		ptr_node data();
+		const ptr_node data() const;
 
 		void swap(rb_tree& other);
 
@@ -354,6 +373,12 @@ namespace d_stl {
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
 		data() {
+		return header->parent;
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	const rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		data() const {
 		return header->parent;
 	}
 
