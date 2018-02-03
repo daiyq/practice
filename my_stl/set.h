@@ -4,7 +4,8 @@
 #include "rb_tree.h"
 #include "memory.h"
 #include "iterator.h"
-#include <functional> //std::less<>
+#include "functional.h"
+//#include <functional> //std::less<>
 #include <initializer_list>
 #include <utility>//pair
 
@@ -21,10 +22,11 @@ namespace d_stl {
 		using value_compare = Compare;
 		using reference = value_type&;
 		using const_reference = const value_type&;
-		using pointer = value_type*;
-		using const_pointer = const value_type*;
-		//using pointer = rb_tree_node<Key>*;
-		//using const_pointer = const rb_tree_node<Key>*;
+		//using pointer = value_type*;
+		//using const_pointer = const value_type*;
+		//using pointer=Allocator::pointer
+		using pointer = rb_tree_node<Key>*;
+		using const_pointer = const rb_tree_node<Key>*;
 
 		using iterator = const rb_tree_iterator<value_type>;
 		using const_iterator = const rb_tree_iterator<value_type>;
@@ -32,7 +34,7 @@ namespace d_stl {
 		using const_reverse_iterator = d_stl::reverse_iterator<const_iterator>;
 		
 		//member function
-		set() {}
+		set();
 		set(const value_type& value);
 		template<class InputIt>
 		set(InputIt first, Input last);
@@ -115,7 +117,7 @@ namespace d_stl {
 		const_iterator upper_bound(const Key& key) const;
 
 	private:
-		d_stl::rb_tree<Key, Key, Compare, Allocator> rb_set;
+		d_stl::rb_tree<Key, Key, d_stl::identify_set<value_type>, Compare, Allocator> rb_set;
 
 	};
 	

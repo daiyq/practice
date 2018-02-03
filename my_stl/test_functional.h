@@ -21,10 +21,10 @@ namespace d_stl {
 	}
 
 	void test_case_functional_identify() {
-		using d_identify_single = d_stl::identify<int>;
+		using d_identify_single = d_stl::identify_set<int>;
 		std::cout << d_identify_single()(5) << '\n';
 
-		using d_identify_pair = d_stl::identify<d_stl::pair<int, int>>;
+		using d_identify_pair = d_stl::identify_map<d_stl::pair<int, int>>;
 		d_stl::pair<int, int> tem_pair(5, 5);
 		std::cout << d_identify_pair()(tem_pair) << '\n';
 	}

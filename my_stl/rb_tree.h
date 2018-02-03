@@ -125,15 +125,15 @@ namespace d_stl {
 		}
 	}
 
-	template<class Key, class Value, class KeyOfValue = d_stl::identify<Value>, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
+	template<class Key, class Value, class KeyOfValue = d_stl::identify_map<Value>, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
 	class rb_tree;
 
-	template<class Key, class Value, class KeyOfValue = d_stl::identify<Value>, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
+	template<class Key, class Value, class KeyOfValue = d_stl::identify_map<Value>, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
 	void swap(rb_tree<Key, Value, KeyOfValue, Compare, Allocator>& lhs, rb_tree<Key, Value, KeyOfValue, Compare, Allocator>& rhs);
 
 	//rb_tree
 	//red_node is left node
-	template<class Key, class Value, class KeyOfValue = d_stl::identify<Value>, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
+	template<class Key, class Value, class KeyOfValue, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
 	class rb_tree {
 	public:
 		using key_type = Key;
@@ -680,7 +680,7 @@ namespace d_stl {
 		return p;
 	}
 
-	template<class Key, class Value, class KeyOfValue = d_stl::identify<Value>, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
+	template<class Key, class Value, class KeyOfValue = d_stl::identify_map<Value>, class Compare = d_stl::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Value>>>
 	void swap(rb_tree<Key, Value, KeyOfValue, Compare, Allocator>& lhs, rb_tree<Key, Value, KeyOfValue, Compare, Allocator>& rhs) {
 		lhs.swap(rhs);
 	}
