@@ -34,7 +34,7 @@ namespace d_stl {
 		using pointer = rb_tree_node<Key>*;
 		using const_pointer = const rb_tree_node<Key>*;
 
-		using iterator = const rb_tree_iterator<value_type>;//same as rb_tree
+		using iterator = rb_tree_iterator<value_type>;//same as rb_tree
 		using const_iterator = const rb_tree_iterator<value_type>;
 		using reverse_iterator = d_stl::reverse_iterator<iterator>;
 		using const_reverse_iterator = d_stl::reverse_iterator<const_iterator>;
@@ -56,19 +56,19 @@ namespace d_stl {
 
 		//iterator
 		iterator begin() noexcept {
-			return t.cbegin();
+			return t.begin();
 		}
 		const_iterator begin() const noexcept {
-			return t.cbegin();
+			return t.begin();
 		}
 		const_iterator cbegin() const noexcept {
 			return t.cbegin();
 		}
 		iterator end() noexcept {
-			return t.cend();
+			return t.end();
 		}
 		const_iterator end() const noexcept {
-			return t.cend();
+			return t.end();
 		}
 		const_iterator cend() const noexcept {
 			return t.cend();
@@ -81,7 +81,7 @@ namespace d_stl {
 			return reverse_iterator(end());
 		}
 		const_reverse_iterator crbegin() const noexcept {
-			return reverse_iterator(end());
+			return reverse_iterator(cend());
 		}
 		reverse_iterator rend() noexcept {
 			return reverse_iterator(begin());
@@ -90,7 +90,7 @@ namespace d_stl {
 			return reverse_iterator(begin());
 		}
 		const_reverse_iterator crend() const noexcept {
-			return reverse_iterator(begin());
+			return reverse_iterator(cbegin());
 		}
 
 		//capacity
@@ -248,13 +248,13 @@ namespace d_stl {
 			t.insert(*first);
 		}
 	}
-
+	
 	template<class Key, class Compare, class Allocator>
 	template<class...Args>
-	typename set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::emplace(Args&&...args) {
+	typename set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::emplace(Args&&... args) {
 		
 	}
-
+	
 	template<class Key, class Compare, class Allocator>
 	typename set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::erase(const_iterator pos) {
 		iterator tmp = iterator(pos.data());
@@ -297,7 +297,7 @@ namespace d_stl {
 			return 1;
 		}
 	}
-
+	
 	template<class Key, class Compare, class Allocator>
 	typename set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::find(const Key& key) {
 		pointer tmp = t.find(key);
@@ -308,7 +308,7 @@ namespace d_stl {
 			return iterator(tmp);
 		}
 	}
-
+	
 	template<class Key, class Compare, class Allocator>
 	typename set<Key, Compare, Allocator>::const_iterator set<Key, Compare, Allocator>::find(const Key& key) const {
 		const_pointer tmp = t.find(key);
@@ -319,7 +319,7 @@ namespace d_stl {
 			return const_iterator(tmp);
 		}
 	}
-		
+	
 	template<class Key, class Compare, class Allocator>
 	typename set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::lower_bound(const Key& key) {
 		pointer tmp = t.find_lower_bound(key);
@@ -330,7 +330,7 @@ namespace d_stl {
 			return ++iterator(tmp);
 		}
 	}
-
+	
 	template<class Key, class Compare, class Allocator>
 	typename set<Key, Compare, Allocator>::const_iterator set<Key, Compare, Allocator>::lower_bound(const Key& key) const {
 		const_pointer tmp = t.find_lower_bound(key);
@@ -347,7 +347,7 @@ namespace d_stl {
 		pointer tmp = t.find_lower_bound(key);
 		return ++iterator(tmp);
 	}
-
+	
 	template<class Key, class Compare, class Allocator>
 	typename set<Key, Compare, Allocator>::const_iterator set<Key, Compare, Allocator>::upper_bound(const Key& key) const {
 		const_pointer tmp = t.find_lower_bound(key);

@@ -41,6 +41,13 @@ namespace d_stl {
 		rb_tree_iterator(const ptr_node& n) :current(n) {
 		}
 
+		bool operator==(const self& other) const {
+			return current == other.current;
+		}
+		bool operator!=(const self& other) const {
+			return current != other.current;
+		}
+
 		const ptr_node data()const {
 			return current;
 		}
@@ -86,6 +93,15 @@ namespace d_stl {
 		void successor();
 	};
 
+	template<class Value>
+	bool operator==(const rb_tree_iterator<Value>& lhs, const rb_tree_iterator<Value>& rhs) {
+		return (lhs.current == rhs.current);
+	}
+
+	template<class Value>
+	bool operator!=(const rb_tree_iterator<Value>& lhs, const rb_tree_iterator<Value>& rhs) {
+		return (lhs.current != rhs.current);
+	}
 
 	template<class Value>
 	void rb_tree_iterator<Value>::precursor() {
@@ -205,11 +221,13 @@ namespace d_stl {
 			return const_iterator(header);
 		}
 
-		bool empty();
-		size_type size();
+		bool empty() const;
+		size_type size() const;
 
 		ptr_node find(const key_type& key);
+		const ptr_node find(const key_type& key) const;
 		ptr_node find_lower_bound(const key_type& key);
+		const ptr_node find_lower_bound(const key_type& key) const;
 		void insert(const value_type& value);
 		void erase_min();
 		void erase_max();
@@ -232,23 +250,28 @@ namespace d_stl {
 	private:
 		ptr_node creat_node();
 		ptr_node creat_node(const value_type& value);
-		ptr_node copy_node(ptr_node p);
-		ptr_node copy_tree(ptr_node p_parent, ptr_node source);
+		ptr_node copy_node(const ptr_node p);
+		ptr_node copy_tree(const ptr_node p_parent, const ptr_node source);
 		void delete_node(ptr_node p);
 		void initialize();
 		void clean_tree();
 		void clean_tree(ptr_node p);
 
-		ptr_node find_base(ptr_node p, const key_type& key);
-		ptr_node find_lower_bound_base(ptr_node p, ptr_node parent, const key_type& key);
+		ptr_node find_base(const ptr_node p, const key_type& key);
+		const ptr_node find_base(const ptr_node p, const key_type& key) const;
+		ptr_node find_lower_bound_base(const ptr_node p, const ptr_node parent, const key_type& key);
+		const ptr_node find_lower_bound_base(const ptr_node p, const ptr_node parent, const key_type& key) const;
 		ptr_node insert_base(ptr_node p, ptr_node p_parent, const value_type& value);
 		ptr_node erase_min_base(ptr_node p);
 		ptr_node erase_max_base(ptr_node p);
 		ptr_node erase_base(ptr_node p, key_type key);
 
-		ptr_node min(ptr_node p);
-		ptr_node max(ptr_node p);
-		size_type size_base(ptr_node p);
+		ptr_node min(const ptr_node p);
+		const ptr_node min(const ptr_node p) const;
+		ptr_node max(const ptr_node p);
+		const ptr_node max(const ptr_node p) const;
+
+		size_type size_base(const ptr_node p) const;
 
 		//re_balance after erase
 		ptr_node balance(ptr_node p);
@@ -306,7 +329,7 @@ namespace d_stl {
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
-	bool rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::empty() {
+	bool rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::empty() const {
 		if (header->parent == nullptr) {
 			return true;
 		}
@@ -317,7 +340,7 @@ namespace d_stl {
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::size_type rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
-		size() {
+		size() const {
 		if (empty()) {
 			return 0;
 		}
@@ -325,16 +348,28 @@ namespace d_stl {
 			return size_base(header->parent);
 		}
 	}
-
+	
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
 		find(const key_type& key) {
+		return find_base(header->parent, key);
+	}
+	
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	const typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		find(const key_type& key) const {
 		return find_base(header->parent, key);
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
 		find_lower_bound(const key_type& key) {
+		return find_lower_bound_base(header->parent, header, key);
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	const typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		find_lower_bound(const key_type& key) const {
 		return find_lower_bound_base(header->parent, header, key);
 	}
 
@@ -431,7 +466,7 @@ namespace d_stl {
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
-		copy_node(ptr_node p) {
+		copy_node(const ptr_node p) {
 		ptr_node creat_node = data_alloc::allocate(1);
 		node n;
 		n.value = p->value;
@@ -442,7 +477,7 @@ namespace d_stl {
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
-		copy_tree(ptr_node p_parent, ptr_node source) {
+		copy_tree(const ptr_node p_parent, const ptr_node source) {
 		if (source == nullptr) {
 			return;
 		}
@@ -488,7 +523,7 @@ namespace d_stl {
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
-		find_base(ptr_node p, const key_type& key) {
+		find_base(const ptr_node p, const key_type& key) {
 		if (p == nullptr) {
 			return nullptr
 		}
@@ -506,8 +541,46 @@ namespace d_stl {
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	const typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		find_base(const ptr_node p, const key_type& key) const {
+		if (p == nullptr) {
+			return nullptr
+		}
+		//equal
+		else if (!Compare()(key, KeyOfValue()(p->value)) && !Compare()(KeyOfValue()(p->value), key)) {
+			return p;
+		}
+		//less
+		else if (Compare()(key, KeyOfValue()(p->value))) {
+			return find_base(p->left, key);
+		}
+		else {
+			return find_base(p->right, key);
+		}
+	}
+	
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
-		find_lower_bound_base(ptr_node p, ptr_node parent, const key_type& key) {
+		find_lower_bound_base(const ptr_node p, const ptr_node parent, const key_type& key) {
+		if (p == nullptr) {
+			return parent;
+		}
+		//equal
+		else if (!Compare()(key, KeyOfValue()(p->value)) && !Compare()(KeyOfValue()(p->value), key)) {
+			return p;
+		}
+		//less
+		else if (Compare()(key, KeyOfValue()(p->value))) {
+			return find_base(p->left, key);
+		}
+		else {
+			return find_base(p->right, key);
+		}
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	const typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		find_lower_bound_base(const ptr_node p, const ptr_node parent, const key_type& key) const {
 		if (p == nullptr) {
 			return parent;
 		}
@@ -639,7 +712,7 @@ namespace d_stl {
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
-		min(ptr_node p) {
+		min(const ptr_node p) {
 		while (p->left != nullptr) {
 			p = p->left;
 		}
@@ -647,8 +720,26 @@ namespace d_stl {
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	const typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		min(const ptr_node p) const {
+		while (p->left != nullptr) {
+			p = p->left;
+		}
+		return p;
+	}
+	
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
-		max(ptr_node p) {
+		max(const ptr_node p) {
+		while (p->right != nullptr) {
+			p = p->right;
+		}
+		return p;
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	const typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		max(ptr_node p) const {
 		while (p->right != nullptr) {
 			p = p->right;
 		}
@@ -657,7 +748,7 @@ namespace d_stl {
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::size_type rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
-		size_base(ptr_node p) {
+		size_base(const ptr_node p) const {
 		if (p == nullptr) {
 			return 0;
 		}
