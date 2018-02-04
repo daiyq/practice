@@ -61,22 +61,22 @@ namespace d_stl {
 
 		//pre, return *this
 		self& operator++() {
-			precursor();
+			successor();
 			return *this;
 		}
 		self& operator--() {
-			successor();
+			precursor();
 			return *this;
 		}
 		//post, return a copy
 		self operator++(int) {
 			self tmp = *this;
-			precursor();
+			successor();
 			return tmp;
 		}
 		self operator--(int) {
 			self tmp = *this;
-			successor();
+			precursor();
 			return tmp;
 		}
 
@@ -183,6 +183,7 @@ namespace d_stl {
 		size_type size();
 
 		ptr_node find(const key_type& key);
+		ptr_node find_lower_bound(const key_type& key);
 		void insert(const value_type& value);
 		void erase_min();
 		void erase_max();
@@ -209,9 +210,11 @@ namespace d_stl {
 		ptr_node copy_tree(ptr_node p_parent, ptr_node source);
 		void delete_node(ptr_node p);
 		void initialize();
+		void clean_tree();
 		void clean_tree(ptr_node p);
 
 		ptr_node find_base(ptr_node p, const key_type& key);
+		ptr_node find_lower_bound_base(ptr_node p, ptr_node parent, const key_type& key);
 		ptr_node insert_base(ptr_node p, ptr_node p_parent, const value_type& value);
 		ptr_node erase_min_base(ptr_node p);
 		ptr_node erase_max_base(ptr_node p);
@@ -316,6 +319,12 @@ namespace d_stl {
 	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
 		find(const key_type& key) {
 		return find_base(header->parent, key);
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		find_lower_bound(const key_type& key) {
+		return find_lower_bound_base(header->parent, header, key);
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
@@ -449,6 +458,11 @@ namespace d_stl {
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::clean_tree() {
+		clean_tree(header->parent);
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::clean_tree(ptr_node p) {
 		if (p == nullptr) {
 			return;
@@ -465,6 +479,25 @@ namespace d_stl {
 		find_base(ptr_node p, const key_type& key) {
 		if (p == nullptr) {
 			return nullptr
+		}
+		//equal
+		else if (!Compare()(key, KeyOfValue()(p->value)) && !Compare()(KeyOfValue()(p->value), key)) {
+			return p;
+		}
+		//less
+		else if (Compare()(key, KeyOfValue()(p->value))) {
+			return find_base(p->left, key);
+		}
+		else {
+			return find_base(p->right, key);
+		}
+	}
+
+	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
+	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
+		find_lower_bound_base(ptr_node p, ptr_node parent, const key_type& key) {
+		if (p == nullptr) {
+			return parent;
 		}
 		//equal
 		else if (!Compare()(key, KeyOfValue()(p->value)) && !Compare()(KeyOfValue()(p->value), key)) {

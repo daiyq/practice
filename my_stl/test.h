@@ -39,6 +39,10 @@ namespace d_stl {
 		assert(equal_containter(s_list_7, s_list_7));
 		*/
 	
+		std::list<int> s_compare1({0,0,1});
+		std::list<int> s_compare2({1,1});
+		
+	    assert(s_compare1<s_compare2);
 		
 	}
 
