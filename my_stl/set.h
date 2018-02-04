@@ -17,7 +17,7 @@ namespace d_stl {
 	template<class Key, class Compare = std::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Key>>>
 	void swap(set<Key, Compare, Allocator>& lhs, set<Key, Compare, Allocator>& rhs);
 
-	template<class Key,class Compare=std::less<Key>,class Allocator=d_stl::allocator<rb_tree_node<Key>>>
+	template<class Key, class Compare, class Allocator>
 	class set {
 	public:
 		using key_type = Key;
@@ -44,7 +44,7 @@ namespace d_stl {
 		//member function
 		set();
 		template<class InputIt>
-		set(InputIt first, Input last);
+		set(InputIt first, InputIt last);
 		set(const set& other);
 		set(set&& other);
 		set(std::initializer_list<value_type> ilist);
@@ -56,41 +56,41 @@ namespace d_stl {
 
 		//iterator
 		iterator begin() noexcept {
-
+			return t.cbegin();
 		}
 		const_iterator begin() const noexcept {
-			
+			return t.cbegin();
 		}
 		const_iterator cbegin() const noexcept {
-			
+			return t.cbegin();
 		}
 		iterator end() noexcept {
-			
+			return t.cend();
 		}
 		const_iterator end() const noexcept {
-			
+			return t.cend();
 		}
 		const_iterator cend() const noexcept {
-			
+			return t.cend();
 		}
 
 		reverse_iterator rbegin() noexcept {
-			
+			return reverse_iterator(end());
 		}
 		const_reverse_iterator rbegin() const noexcept {
-			
+			return reverse_iterator(end());
 		}
 		const_reverse_iterator crbegin() const noexcept {
-			
+			return reverse_iterator(end());
 		}
 		reverse_iterator rend() noexcept {
-			
+			return reverse_iterator(begin());
 		}
 		const_reverse_iterator rend() const noexcept {
-			
+			return reverse_iterator(begin());
 		}
 		const_reverse_iterator crend() const noexcept {
-			
+			return reverse_iterator(begin());
 		}
 
 		//capacity
@@ -99,8 +99,8 @@ namespace d_stl {
 
 		//modifiers
 		void clear();
-		iterator insert(const value_type& value); // return the element inserted
-		iterator insert(value_type&& value);
+		void insert(const value_type& value); // return the element inserted
+		void insert(value_type&& value);
 		template<class InputIt>
 		void insert(InputIt first, InputIt last);
 		void insert(std::initializer_list<value_type> ilist);
@@ -119,8 +119,16 @@ namespace d_stl {
 		const_iterator find(const Key& key) const;
 		//return type whose the first iterator pointing to the first element not less than the key, 
 		//the second iterator pointing to the first element greater than the key
-		pair<iterator, iterator> equal_range(const Key& key);
-		pair<const_iterator, const_iterator> equal_range(const Key& key) const;
+		pair<iterator, iterator> equal_range(const Key& key) {
+			iterator first = lower_bound(key);
+			iterator second = upper_bound(key);
+			return pair<iterator, iterator>(first, second);
+		}
+		pair<const_iterator, const_iterator> equal_range(const Key& key) const {
+			const_iterator first = lower_bound(key);
+			const_iterator second = upper_bound(key);
+			return pair<const_iterator, const_iterator>(first, second);
+		}
 		//the first element that is not less than the key
 		iterator lower_bound(const Key& key);
 		const_iterator lower_bound(const Key& key) const;
@@ -133,7 +141,6 @@ namespace d_stl {
 	private:
 		d_stl::rb_tree<Key, Key, KeyOfValue, Compare, Allocator> t;
 
-		
 	};
 	
 	template<class Key, class Compare, class Allocator>
@@ -142,7 +149,7 @@ namespace d_stl {
 
 	template<class Key, class Compare, class Allocator>
 	template<class InputIt>
-	set<Key, Compare, Allocator>::set(InputIt first, Input last) : t() {
+	set<Key, Compare, Allocator>::set(InputIt first, InputIt last) : t() {
 		for (; first != last; first++) {
 			t.insert(*first);
 		}
@@ -206,7 +213,7 @@ namespace d_stl {
 	}
 
 	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::size_type set<Key, Compare, Allocator>::size() const {
+	typename set<Key, Compare, Allocator>::size_type set<Key, Compare, Allocator>::size() const {
 		return t.size();
 	}
 
@@ -216,13 +223,12 @@ namespace d_stl {
 	}
 
 	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::insert(const value_type& value) {
-		//return type
+	void set<Key, Compare, Allocator>::insert(const value_type& value) {
 		t.insert(value);
 	}
+
 	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::insert(value_type&& value) {
-		//return type
+	void set<Key, Compare, Allocator>::insert(value_type&& value) {
 		t.insert(value);
 	}
 
@@ -245,33 +251,36 @@ namespace d_stl {
 
 	template<class Key, class Compare, class Allocator>
 	template<class...Args>
-	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::emplace(Args&&...args) {
-		value_type tmp = std::forward<Args>(args);
-		if (find(KeyOfValue()(tmp)) == end()) {
-			//return type
-			insert(tmp);
-
-		}
-		else {
-			return end();
-		}
+	typename set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::emplace(Args&&...args) {
+		
 	}
 
 	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::erase(const_iterator pos) {
+	typename set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::erase(const_iterator pos) {
+		iterator tmp = iterator(pos.data());
+		tmp++;
 		t.erase(KeyOfValue()(*pos));
+		return tmp;
 	}
 
 	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::erase(const_iterator first, const_iterator last) {
+	typename set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::erase(const_iterator first, const_iterator last) {
+		iterator tmp = iterator(last.data());
 		for (; first != last; first++) {
 			t.erase(KeyOfValue()(*first));
 		}
+		return tmp;
 	}
 
 	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::size_type set<Key, Compare, Allocator>::erase(const key_type& key) {
-		t.erase(key);
+	typename set<Key, Compare, Allocator>::size_type set<Key, Compare, Allocator>::erase(const key_type& key) {
+		if (t.find(key) == nullptr) {
+			return 0;
+		}
+		else {
+			t.erase(key);
+			return 1;
+		}
 	}
 
 	template<class Key, class Compare, class Allocator>
@@ -280,7 +289,7 @@ namespace d_stl {
 	}
 
 	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::size_type set<Key, Compare, Allocator>::count(const Key& key) const {
+	typename set<Key, Compare, Allocator>::size_type set<Key, Compare, Allocator>::count(const Key& key) const {
 		if (find(key) == end()) {
 			return 0;
 		}
@@ -290,7 +299,7 @@ namespace d_stl {
 	}
 
 	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::find(const Key& key) {
+	typename set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::find(const Key& key) {
 		pointer tmp = t.find(key);
 		if (tmp == nullptr) {
 			return end();
@@ -301,7 +310,7 @@ namespace d_stl {
 	}
 
 	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::const_iterator set<Key, Compare, Allocator>::find(const Key& key) const {
+	typename set<Key, Compare, Allocator>::const_iterator set<Key, Compare, Allocator>::find(const Key& key) const {
 		const_pointer tmp = t.find(key);
 		if (tmp == nullptr) {
 			return end();
@@ -310,39 +319,9 @@ namespace d_stl {
 			return const_iterator(tmp);
 		}
 	}
-	
+		
 	template<class Key, class Compare, class Allocator>
-	pair<set<Key, Compare, Allocator>::iterator, set<Key, Compare, Allocator>::iterator> set<Key, Compare, Allocator>::
-		equal_range(const Key& key) {
-		pair<iterator, iterator> p;
-		pointer tmp = t.find_lower_bound(key);
-		if (tmp->value == value_type(key)) {
-			iterator first = iterator(tmp);	
-		}
-		else {
-			iterator first = ++iterator(tmp);;
-		}
-		iterator second = ++iterator(tmp);
-		return p(first, second);
-	}
-
-	template<class Key, class Compare, class Allocator>
-	pair<set<Key, Compare, Allocator>::const_iterator, set<Key, Compare, Allocator>::const_iterator> set<Key, Compare, Allocator>::
-		equal_range(const Key& key) const {
-		pair<const_iterator, const_iterator> p;
-		pointer tmp = t.find_lower_bound(key);
-		if (tmp->value == value_type(key)) {
-			const_iterator first = const_iterator(tmp);
-		}
-		else {
-			const_iterator first = ++const_iterator(tmp);;
-		}
-		const_iterator second = ++const_iterator(tmp);
-		return p(first, second);
-	}
-	
-	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::lower_bound(const Key& key) {
+	typename set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::lower_bound(const Key& key) {
 		pointer tmp = t.find_lower_bound(key);
 		if (tmp->value == value_type(key)) {
 			return iterator(tmp);
@@ -353,7 +332,7 @@ namespace d_stl {
 	}
 
 	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::const_iterator set<Key, Compare, Allocator>::lower_bound(const Key& key) const {
+	typename set<Key, Compare, Allocator>::const_iterator set<Key, Compare, Allocator>::lower_bound(const Key& key) const {
 		const_pointer tmp = t.find_lower_bound(key);
 		if (tmp->value == value_type(key)) {
 			return const_iterator(tmp);
@@ -364,16 +343,17 @@ namespace d_stl {
 	}
 	
 	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::upper_bound(const Key& key) {
+	typename set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::upper_bound(const Key& key) {
 		pointer tmp = t.find_lower_bound(key);
 		return ++iterator(tmp);
 	}
 
 	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::const_iterator set<Key, Compare, Allocator>::upper_bound(const Key& key) const {
+	typename set<Key, Compare, Allocator>::const_iterator set<Key, Compare, Allocator>::upper_bound(const Key& key) const {
 		const_pointer tmp = t.find_lower_bound(key);
 		return ++const_iterator(tmp);
 	}
+	
 
 
 	template<class Key, class Compare, class Alloc>
@@ -428,7 +408,7 @@ namespace d_stl {
 		return (!operator<(lhs, rhs));
 	}
 
-	template<class Key, class Compare = std::less<Key>, class Allocator = d_stl::allocator<rb_tree_node<Key>>>
+	template<class Key, class Compare, class Allocator>
 	void swap(set<Key, Compare, Allocator>& lhs, set<Key, Compare, Allocator>& rhs) {
 		lhs.swap(rhs);
 	}
