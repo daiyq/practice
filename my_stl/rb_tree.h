@@ -60,7 +60,7 @@ namespace d_stl {
 		}
 
 		reference operator*() const {
-			return current.value;
+			return current->value;
 		}
 		pointer operator->() const {
 			return &(operator*());
@@ -185,6 +185,7 @@ namespace d_stl {
 		using node = rb_tree_node<Value>;
 		using ptr_node = node*;
 		using data_alloc = Allocator;
+
 		rb_tree();
 		rb_tree(const rb_tree& other);
 		rb_tree(rb_tree&& other);
@@ -303,7 +304,7 @@ namespace d_stl {
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::rb_tree(const rb_tree& other) {
 		initialize();
-		copy_tree(header, other.data());
+		header->parent = copy_tree(header, other.data());
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
@@ -316,8 +317,10 @@ namespace d_stl {
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::~rb_tree() {
-		clean_tree(header->parent);
-		delete_node(header);
+		if (header != nullptr) {
+			clean_tree(header->parent);
+			delete_node(header);
+		}
 	}
 
 	//copy and swap
@@ -376,7 +379,13 @@ namespace d_stl {
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
 		insert(const value_type& value) {
-		insert_base(header->parent, header, KeyOfValue()(value), value);
+		if (header->parent == nullptr) {
+			header->parent = creat_node(value);
+			header->parent->parent = header;
+		}
+		else {
+			header->parent=insert_base(header->parent, header, value);
+		}
 		header->parent->color = re_tree_node_black;
 	}
 
@@ -479,7 +488,7 @@ namespace d_stl {
 	typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
 		copy_tree(const ptr_node p_parent, const ptr_node source) {
 		if (source == nullptr) {
-			return;
+			return nullptr;
 		}
 		ptr_node x = copy_node(source);
 		x->parent = p_parent;
@@ -625,7 +634,7 @@ namespace d_stl {
 			p = rotate_right(p);
 		}
 		if (is_red(p->right) && is_red(p->left)) {
-			flip_color_insert(p);
+			flip_color(p);
 		}
 
 		return p;
@@ -713,37 +722,41 @@ namespace d_stl {
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
 		min(const ptr_node p) {
-		while (p->left != nullptr) {
-			p = p->left;
+		ptr_node tmp = p;
+		while (tmp->left != nullptr) {
+			tmp = tmp->left;
 		}
-		return p;
+		return tmp;
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	const typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
 		min(const ptr_node p) const {
-		while (p->left != nullptr) {
-			p = p->left;
+		ptr_node tmp = p;
+		while (tmp->left != nullptr) {
+			tmp = tmp->left;
 		}
-		return p;
+		return tmp;
 	}
 	
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
 		max(const ptr_node p) {
-		while (p->right != nullptr) {
-			p = p->right;
+		ptr_node tmp = p;
+		while (tmp->right != nullptr) {
+			tmp = tmp->right;
 		}
-		return p;
+		return tmp;
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	const typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
-		max(ptr_node p) const {
-		while (p->right != nullptr) {
-			p = p->right;
+		max(const ptr_node p) const {
+		ptr_node tmp = p;
+		while (tmp->right != nullptr) {
+			tmp = tmp->right;
 		}
-		return p;
+		return tmp;
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>

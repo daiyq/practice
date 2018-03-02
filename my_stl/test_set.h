@@ -45,6 +45,8 @@ namespace d_stl {
 	}
 
 	void test_case_set_modifiers() {
+		std::set<int> s_set_1;
+		s_set_1.find(1);
 	}
 
 	void test_case_set_lookup() {

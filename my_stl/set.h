@@ -115,8 +115,25 @@ namespace d_stl {
 
 		//lookup
 		size_type count(const Key& key) const;
-		iterator find(const Key& key);
-		const_iterator find(const Key& key) const;
+		iterator find(const Key& key) {
+			pointer tmp = t.find(key);
+			if (tmp == nullptr) {
+				return end();
+			}
+			else {
+				return iterator(tmp);
+			}
+		}
+
+		const_iterator find(const Key& key) const {
+			const_pointer tmp = t.find(key);
+			if (tmp == nullptr) {
+				return end();
+			}
+			else {
+				return const_iterator(tmp);
+			}
+		}
 		//return type whose the first iterator pointing to the first element not less than the key, 
 		//the second iterator pointing to the first element greater than the key
 		pair<iterator, iterator> equal_range(const Key& key) {
@@ -130,11 +147,35 @@ namespace d_stl {
 			return pair<const_iterator, const_iterator>(first, second);
 		}
 		//the first element that is not less than the key
-		iterator lower_bound(const Key& key);
-		const_iterator lower_bound(const Key& key) const;
+		iterator lower_bound(const Key& key) {
+			pointer tmp = t.find_lower_bound(key);
+			if (tmp->value == value_type(key)) {
+				return iterator(tmp);
+			}
+			else {
+				return ++iterator(tmp);
+			}
+		}
+
+		const_iterator lower_bound(const Key& key) const {
+			const_pointer tmp = t.find_lower_bound(key);
+			if (tmp->value == value_type(key)) {
+				return const_iterator(tmp);
+			}
+			else {
+				return ++const_iterator(tmp);
+			}
+		}
 		//the first element that is greater than the key
-		iterator upper_bound(const Key& key);
-		const_iterator upper_bound(const Key& key) const;
+		iterator upper_bound(const Key& key) {
+			pointer tmp = t.find_lower_bound(key);
+			return ++iterator(tmp);
+		}
+
+		const_iterator upper_bound(const Key& key) const {
+			const_pointer tmp = t.find_lower_bound(key);
+			return ++const_iterator(tmp);
+		}
 
 		friend void swap(set<Key, Compare, Allocator>& lhs, set<Key, Compare, Allocator>& rhs);
 
@@ -156,16 +197,13 @@ namespace d_stl {
 	}
 
 	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::set(const set& other) :t(other.t) {
+	set<Key, Compare, Allocator>::set(const set& other) : t(other.t) {
 	}
 
 	template<class Key, class Compare, class Allocator>
-	set<Key, Compare, Allocator>::set(set&& other) {
-		if (this != &other) {
-			t(std::move(other.t));
-		}
+	set<Key, Compare, Allocator>::set(set&& other) : t(std::move(other.t)) {
 	}
-
+	
 	template<class Key, class Compare, class Allocator>
 	set<Key, Compare, Allocator>::set(std::initializer_list<value_type> ilist) {
 		const value_type* first = ilist.begin();
@@ -298,6 +336,7 @@ namespace d_stl {
 		}
 	}
 	
+	/*
 	template<class Key, class Compare, class Allocator>
 	typename set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::find(const Key& key) {
 		pointer tmp = t.find(key);
@@ -308,16 +347,16 @@ namespace d_stl {
 			return iterator(tmp);
 		}
 	}
-	
+
 	template<class Key, class Compare, class Allocator>
-	typename set<Key, Compare, Allocator>::const_iterator set<Key, Compare, Allocator>::find(const Key& key) const {
+	typename set<Key, Compare, Allocator>::const_iterator set<Key, Compare, Allocator>::find(const Key& key) const {	
 		const_pointer tmp = t.find(key);
 		if (tmp == nullptr) {
 			return end();
 		}
 		else {
 			return const_iterator(tmp);
-		}
+		}	
 	}
 	
 	template<class Key, class Compare, class Allocator>
@@ -353,7 +392,7 @@ namespace d_stl {
 		const_pointer tmp = t.find_lower_bound(key);
 		return ++const_iterator(tmp);
 	}
-	
+	*/
 
 
 	template<class Key, class Compare, class Alloc>
