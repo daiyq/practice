@@ -126,7 +126,7 @@ namespace d_stl {
 		}
 
 		const_iterator find(const Key& key) const {
-			const_pointer tmp = t.find(key);
+			pointer tmp = t.find(key);
 			if (tmp == nullptr) {
 				return end();
 			}
@@ -158,7 +158,7 @@ namespace d_stl {
 		}
 
 		const_iterator lower_bound(const Key& key) const {
-			const_pointer tmp = t.find_lower_bound(key);
+			pointer tmp = t.find_lower_bound(key);
 			if (tmp->value == value_type(key)) {
 				return const_iterator(tmp);
 			}
@@ -173,7 +173,7 @@ namespace d_stl {
 		}
 
 		const_iterator upper_bound(const Key& key) const {
-			const_pointer tmp = t.find_lower_bound(key);
+			pointer tmp = t.find_lower_bound(key);
 			return ++const_iterator(tmp);
 		}
 
@@ -236,7 +236,7 @@ namespace d_stl {
 
 	template<class Key, class Compare, class Allocator>
 	set<Key, Compare, Allocator>& set<Key, Compare, Allocator>::operator=(std::initializer_list<value_type> ilist) {
-		t.clean_tree();
+		t.clean();
 		const value_type* first = ilist.begin();
 		const value_type* last = ilist.end();
 		for (; first != last; first++) {
@@ -257,7 +257,7 @@ namespace d_stl {
 
 	template<class Key, class Compare, class Allocator>
 	void set<Key, Compare, Allocator>::clear() {
-		t.clean_tree();
+		t.clean();
 	}
 
 	template<class Key, class Compare, class Allocator>
@@ -304,9 +304,14 @@ namespace d_stl {
 	template<class Key, class Compare, class Allocator>
 	typename set<Key, Compare, Allocator>::iterator set<Key, Compare, Allocator>::erase(const_iterator first, const_iterator last) {
 		iterator tmp = iterator(last.data());
-		for (; first != last; first++) {
-			t.erase(KeyOfValue()(*first));
+
+		iterator it = iterator(first.data());
+		iterator it_tmp = iterator(it.data());
+		for (; it != last; ) {
+			it_tmp = it++;
+			t.erase(KeyOfValue()(*it_tmp));
 		}
+
 		return tmp;
 	}
 
@@ -323,7 +328,7 @@ namespace d_stl {
 
 	template<class Key, class Compare, class Allocator>
 	void set<Key, Compare, Allocator>::swap(set& other) {
-		t.swap(other);
+		t.swap(other.t);
 	}
 
 	template<class Key, class Compare, class Allocator>

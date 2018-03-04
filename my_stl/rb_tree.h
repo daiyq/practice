@@ -237,6 +237,9 @@ namespace d_stl {
 		ptr_node data();
 		const ptr_node data() const;
 
+		void clean() {
+			clean_tree();
+		}
 		void swap(rb_tree& other);
 
 		friend void swap(rb_tree<Key, Value, KeyOfValue, Compare, Allocator>& lhs, rb_tree<Key, Value, KeyOfValue, Compare, Allocator>& rhs);
@@ -448,7 +451,7 @@ namespace d_stl {
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::swap(rb_tree& other) {
-		if (this != other&) {
+		if (this != &other) {
 			std::swap(header, other.header);
 		}
 	}
@@ -516,6 +519,7 @@ namespace d_stl {
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
 	void rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::clean_tree() {
 		clean_tree(header->parent);
+		header->parent = nullptr;
 	}
 
 	template<class Key, class Value, class KeyOfValue, class Compare, class Allocator>
@@ -534,7 +538,7 @@ namespace d_stl {
 	typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
 		find_base(const ptr_node p, const key_type& key) {
 		if (p == nullptr) {
-			return nullptr
+			return nullptr;
 		}
 		//equal
 		else if (!Compare()(key, KeyOfValue()(p->value)) && !Compare()(KeyOfValue()(p->value), key)) {
@@ -553,7 +557,7 @@ namespace d_stl {
 	const typename rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::ptr_node rb_tree<Key, Value, KeyOfValue, Compare, Allocator>::
 		find_base(const ptr_node p, const key_type& key) const {
 		if (p == nullptr) {
-			return nullptr
+			return nullptr;
 		}
 		//equal
 		else if (!Compare()(key, KeyOfValue()(p->value)) && !Compare()(KeyOfValue()(p->value), key)) {
@@ -657,7 +661,7 @@ namespace d_stl {
 		if (!is_red(p->left) && !is_red(p->left->left)) {
 			p = move_red_left(p);
 		}
-		p->left = erase_min(p->left, p);
+		p->left = erase_min_base(p->left);
 		return balance(p);
 	}
 
@@ -781,7 +785,7 @@ namespace d_stl {
 			p = rotate_right(p);
 		}
 		if (is_red(p->left) && is_red(p->right)) {
-			flip_color_insert(p);
+			flip_color(p);
 		}
 		return p;
 	}
