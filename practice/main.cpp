@@ -864,6 +864,7 @@ int main() {
 
 */
 
+/*
 #include <vector>
 #include <string>
 #include <cstring>
@@ -872,6 +873,7 @@ int main() {
 using namespace std;
 
 int main() {
+	
 	string str="4 3\n0,1 0,2";
 
 	cout << str << endl;
@@ -905,6 +907,566 @@ int main() {
 	cout << endl;
 	cout << p1[2] << endl;
 	cout << p1[3] << endl;
+	
+	
+
+	string str3 = "23 45 76";
+	int m1 = stoi(str3);
+	cout << m1 << endl;
+
+	string str7 = "0123456";
+	int m7 = stoi(str7);//error
+	cout << m7 << endl;
+
+	string str8 = "56w";
+	int m8 = stoi(str8);
+	cout << m8 << endl;
+
+	string str9 = "";
+	int m9 = stoi(str9);
+	cout << m9 << endl;
+
+
+	string str6 = "4564654564897897984654";
+	int m6 = stoi(str6);//error
+	cout << m6 << endl;
+
+
+	string str4 = "   \n";
+	int m2 = stoi(str4);//error
+	cout << m2 << endl;
+	string str5 = "";
+	int m3 = stoi(str5);
+	cout << m3 << endl;
+
+	return 0;
+}
+
+*/
+
+/*
+#include <string>
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+
+int main() {
+	char a[] = { 1,2,3,4,5,6,7,8 };
+	int *p = (int*)a + 1;
+	int n = *p;
+
+	string s = "hello";
+	reverse(s.begin(), s.end());
+	cout << s << endl;
+
+	return 0;
+}
+*/
+
+
+/*
+#include <algorithm>
+
+struct Node
+{
+	int data;
+	Node* left;
+	Node* right;
+};
+
+int height_of_binary_tree(Node* n) {
+	if (n == nullptr)
+		return -1;
+
+	return std::max(height_of_binary_tree(n->left), height_of_binary_tree(n->right)) + 1;
+}
+*/
+
+/*
+#include <string>
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+
+int main() {
+
+	string s, s1, s2;
+	while (cin >> s >> s1 >> s2) {
+		bool forward = true;
+		auto pos1 = s.find(s1);
+		auto pos2 = s.find(s2);
+
+		if (pos1 == -1 || pos2 == -1 || pos2<pos1 + s1.size())
+			forward = false;
+
+		bool backward = true;
+		reverse(s.begin(), s.end());
+		pos1 = s.find(s1);
+		pos2 = s.find(s2);
+
+		if (pos1 == -1 || pos2 == -1 || pos2<pos1 + s1.size())
+			forward = false;
+
+		if (forward&&backward)
+			cout << "both" << endl;
+		else if (forward && !backward)
+			cout << "forward" << endl;
+		else if (!forward&&backward)
+			cout << "backward" << endl;
+		else
+			cout << "invalid" << endl;
+
+	}
+
+	return 0;
+}
+*/
+
+/*
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int main() {
+	int n, m;
+	cin >> n >> m;
+	int n1 = n;
+	vector<int> num;
+	while (n1--) {
+		int l;
+		cin >> l;
+		num.push_back(l);
+	}
+
+	int count = 0;
+	for (int i = 0; i<n - 1; i++) {
+		for (int j = i + 1; j<n; j++) {
+			int result = num[i] ^ num[j];
+			if (result > m)
+				count++;
+		}
+	}
+	cout << count << endl;
+
+	return 0;
+}
+*/
+
+/*
+#include <algorithm>
+#include <queue>
+
+struct Node
+{
+	int data;
+	Node* left;
+	Node* right;
+	Node() :data(0), left(nullptr), right(nullptr) {}
+
+};
+
+//µÝ¹é°æ±¾
+int height_of_binary_tree_recursive(Node* n) {
+	if (n == nullptr)
+		return -1;
+
+	return std::max(height_of_binary_tree_recursive(n->left), height_of_binary_tree_recursive(n->right)) + 1;
+}
+
+//·ÇµÝ¹é°æ±¾£¬²ã´Î±éÀú
+int height_of_binary_tree1(Node* n) {
+	if (n == nullptr)
+		return -1;
+
+	int height = 0;
+	std::queue<Node*> q1, q2;
+	q1.push(n);
+	while (!q1.empty() || !q2.empty()) {
+		if (!q1.empty()) {
+			while (!q1.empty()) {
+				Node* t = q1.front();
+				q1.pop();
+
+				if (t->left != nullptr)
+					q2.push(t->left);
+				if (t->right != nullptr)
+					q2.push(t->right);
+			}
+			if (!q2.empty())
+				height++;
+		}
+		else if (!q2.empty()) {
+			while (!q2.empty()) {
+				Node* t = q2.front();
+				q2.pop();
+
+				if (t->left != nullptr)
+					q1.push(t->left);
+				if (t->right != nullptr)
+					q1.push(t->right);
+			}
+			if (!q1.empty())
+				height++;
+		}
+
+	}
+
+	return height;
+}
+*/
+
+/*
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <string>
+
+using namespace std;
+
+int main() {
+
+	vector<int> v{ 0 };//value
+	vector<int> w{ 0 };//weight
+	int s;//storage
+
+	string s1, s2;
+	cin >> s1 >> s2 >> s;
+	int l1 = 0, r1 = 0;
+	while (r1 <= s1.size()) {
+		if (s1[r1] >= '0'&&s1[r1] <= '9')
+			r1++;
+		else if (s1[r1] == ',' || r1==s1.size()) {
+			int i = stoi(s1.substr(l1, r1 - l1));
+			v.push_back(i);
+			r1++;
+			l1 = r1;
+		}
+	}
+
+	int l2 = 0, r2 = 0;
+	while (r2 <= s2.size()) {
+		if (s1[r2] >= '0'&&s1[r2] <= '9')
+			r2++;
+		else if (s2[r2] == ',' || r2 == s2.size()) {
+			int i = stoi(s2.substr(l2, r2 - l2));
+			w.push_back(i);
+			r2++;
+			l2 = r2;
+		}
+	}
+	
+	
+
+	vector<vector<int>> dp(v.size(), vector<int>(s + 1, 0));
+
+	for (int i = 1; i < v.size(); i++) {
+		for (int j = 1; j <= s; j++) {
+			if (j > w[i])
+				dp[i][j] = max(dp[i - 1][j], dp[i - 1][j - w[i]] + v[i]);
+			else
+				dp[i][j] = dp[i - 1][j];
+		}
+	}
+
+	int res = 0;
+	for (int i = 1; i < v.size(); i++) {
+		for (int j = 1; j <= s; j++) {
+			if (dp[i][j] > res)
+				res = dp[i][j];
+		}
+	}
+	cout << res << endl;
+
 	return 0;
 
+}
+*/
+
+/*
+#include <string>
+#include <iostream>
+#include <map>
+
+using namespace std;
+
+int handle(map<string, string>& m, string& s) {
+	if (s.size() < 11)
+		return -1;
+
+	int space = 0;
+	for (int i = 0; i < s.size(); i++) {
+		if (s[i] == ' ')
+			space++;
+	}
+	if (space != 2)
+		return -1;
+
+	if (s.substr(0, 8) != "typedef ")
+		return -1;
+
+	int pos2 = s.find_last_of(' ');
+	string s1 = s.substr(8, pos2 - 8);
+	string s2 = s.substr(pos2 + 1);
+	if (s1.empty() || s2.empty())
+		return -1;
+
+	m[s2] = s1;
+	return 0;
+}
+
+int main() {
+	string input;
+	getline(cin, input);
+	if (input.empty() || input.back() != ';') {
+		cout << "none" << endl;
+		return 0;
+	}
+
+	map<string, string> m;
+
+	int end = 0;
+	while (!input.empty()) {
+		end = input.find_first_of(';');
+
+		string s = input.substr(0, end);
+		if (handle(m, s) == -1) {
+			cout << "none" << endl;
+			return 0;
+		}
+		end++;
+		while (end != input.size() && input[end] == ' ')
+			end++;
+
+		if (end == input.size())
+			break;
+		input = input.substr(end);
+
+	}
+
+	string target;
+	cin >> target;
+
+	if (m.find(target) == m.end()) {
+		cout << "none" << endl;
+		return 0;
+	}
+	int count_pt = 0;
+	while (m.find(target) != m.end()) {
+		auto it = m.find(target);
+		string t = it->second;
+		int pos = t.find_first_of('*');
+		if (pos != -1) {
+			count_pt += t.size() - pos;
+		}
+		target = t.substr(0, pos);
+	}
+	cout << target;
+	for (int i = 0; i < count_pt; i++) {
+		cout << " " << '*';
+	}
+	cout << endl;
+
+	return 0;
+}
+*/
+
+/*
+#include <string>
+#include <iostream>
+
+using namespace std;
+
+int main() {
+	int n;
+	cin >> n;
+	if (n <= 0 || n > 100) {
+		cout << "n is not correvt" << endl;
+		return 0;
+	}
+
+	string str;
+	while (n--) {
+		cin >> str;
+		if (str.size() != 8) {
+			cout << "input error" << endl;
+			return 0;
+		}
+
+		if (str[0] > '2') {
+			str[0] = '0';			
+		}
+		if (str[0] == '2'&&str[1] > '3') {
+			str[0] = '0';		
+		}
+		if (str[3] > '5') {
+			str[3] = '0';			
+		}
+		if (str[6] > '5') {
+			str[6] = '0';
+		}
+		cout << str << endl;
+	}
+	return 0;
+}
+*/
+
+/*
+#include <iostream>
+#include <list>
+#include <unordered_map>
+
+using namespace std;
+
+int main() {
+	int t;
+	cin >> t;
+	while (t--) {
+		int n;
+		cin >> n;
+		list<int> l;
+		unordered_map<int, list<int>::iterator> m;
+		while (n--) {
+			int id;
+			cin >> id;
+			if (m.find(id) == m.end()) {
+				auto it = l.insert(l.begin(), id);
+				m[id] = it;
+			}
+			else {
+				auto it = m[id];
+				l.splice(l.begin(), l, it);
+			}
+		}
+		for (auto it = l.begin(); it != l.end(); it++) {
+			cout << *it << " ";
+		}
+		cout << endl;
+
+	}
+}
+*/
+
+/*
+#include <string>
+#include <vector>
+#include <iostream>
+
+using namespace std;
+
+int main() {
+	int t;
+	cin >> t;
+	
+	while (t--) {
+				
+		int m, n;
+		cin >> m >> n;
+		vector<string> dict(m);
+		for (int i = 0; i < m; i++) {
+			cin >> dict[i];
+		}
+		string target;
+		cin >> target;
+		int len = target.size();
+		if (len < 2 || len>9)
+			return 0;
+		
+		int count = 0;
+		for (int i = 0; i < m ; i++) {
+			for (int j = 0; j < n ; j++) {
+				if (dict[i][j] == target[0]) {
+					for (int s = 1; s < target.size(); s++) {
+						if (j + s >= n)
+							break;
+						if (dict[i][j + s] != target[s])
+							break;
+						if (s == target.size() - 1)
+							count++;
+					}
+
+					for (int s = 1; s < target.size(); s++) {
+						if (i + s >= m)
+							break;
+						if (dict[i + s][j] != target[s])
+							break;
+						if (s == target.size() - 1)
+							count++;
+					}
+
+					for (int s = 1; s < target.size(); s++) {
+						if (i + s >= m || j + s >= n)
+							break;
+						if (dict[i + s][j + s] != target[s])
+							break;
+						if (s == target.size() - 1)
+							count++;
+					}
+					
+				}
+			}
+		}
+		cout << count << endl;
+	}
+	return 0;
+}
+*/
+
+#include <string>
+#include <iostream>
+#include <map>
+#include <vector>
+
+using namespace std;
+
+int main() {
+	int t;
+	cin >> t;
+	//t = 2;
+	while (t--) {
+		int n;
+		cin >> n;
+		//n = 3;
+		string pre, add;
+		map<string, string> con;
+		//con["1357"] = "GuangZhou01";
+		//con["13680"] = "GuangZhou02";
+		//con["13799"] = "HangZhou01";
+
+	
+		while (n--) {
+			cin >> pre >> add;
+			string pre1 = pre.substr(0, pre.find_first_of('x'));
+			con[pre1] = add;
+		}
+		
+
+		int m;
+		cin >> m;
+		string phone;
+		vector<string> v;
+		while (m--) {
+			cin >> phone;
+			v.push_back(phone);
+		}
+		
+		//vector<string> v = { "13579246810","13680246810","13799999999" };
+		for (int i = 0; i < v.size(); i++) {
+			bool p = false;
+			for (auto it : con) {
+				string com = v[i].substr(0, it.first.size());
+				if (it.first == com) {
+					cout << it.second << endl;
+					p = true;
+					break;
+				}
+			}
+			if (!p)
+				cout << "unknown" << endl;
+		}
+	
+	}
+	return 0;
 }
